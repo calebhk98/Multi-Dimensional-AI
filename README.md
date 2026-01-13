@@ -24,6 +24,10 @@ This project implements an AI creature with:
 ## Quick Start
 
 ```bash
+# Clone repository
+git clone https://github.com/calebhk98/Multi-Dimensional-AI.git
+cd Multi-Dimensional-AI
+
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
@@ -94,7 +98,7 @@ If you use this work in your research, please cite:
   title={Multi-Dimensional AI Creature: Autonomous Embodied Intelligence in VR},
   author={Caleb Kirschbaum},
   year={2026},
-  url={https://github.com/yourusername/multi-dimensional-ai}
+  url={https://github.com/calebhk98/Multi-Dimensional-AI}
 }
 ```
 
