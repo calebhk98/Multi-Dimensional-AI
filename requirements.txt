@@ -1,0 +1,45 @@
+torch>=2.0.0
+torchaudio>=2.0.0
+torchvision>=0.15.0
+transformers>=4.30.0
+einops>=0.7.0
+
+# Audio processing
+librosa>=0.10.0
+encodec>=0.1.1
+
+# Vision processing
+timm>=0.9.0
+opencv-python>=4.8.0
+
+# VR Integration
+# python-osc>=1.8.0
+# mlagents-envs>=0.30.0
+
+# Training & Optimization
+# deepspeed>=0.10.0
+accelerate>=0.20.0
+# bitsandbytes>=0.41.0
+# wandb>=0.15.0
+
+# Evolutionary training
+# deap>=1.4.0
+# ray[default]>=2.6.0
+
+# Testing
+pytest>=7.4.0
+pytest-timeout>=2.1.0
+hypothesis>=6.82.0
+
+# Utilities
+pyyaml>=6.0
+tqdm>=4.65.0
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Development
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.4.0

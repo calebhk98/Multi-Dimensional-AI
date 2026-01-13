@@ -1,0 +1,75 @@
+# Inference Configuration
+
+inference:
+  # Model loading
+  checkpoint_path: "./checkpoints/best_model.pt"
+  device: "cuda"  # Options: cuda, cpu, mps
+  precision: "fp16"  # Options: fp32, fp16, int8, int4
+  
+  # Generation parameters
+  generation:
+    max_new_tokens: 100
+    temperature: 0.8
+    top_k: 50
+    top_p: 0.9
+    repetition_penalty: 1.2
+    early_stopping: true
+    
+    # Per-modality overrides
+    internal_text:
+      temperature: 0.9  # More creative internal thoughts
+    external_text:
+      temperature: 0.7  # More conservative speech
+    audio:
+      temperature: 0.8
+    animation:
+      temperature: 0.6  # Smoother movements
+  
+  # Null token thresholds
+  null_thresholds:
+    internal_text: 0.3  # 30% chance to skip internal thought
+    external_text: 0.5  # 50% chance to stay silent
+    audio: 0.4
+    animation: 0.1  # Rarely completely still
+  
+  # Performance optimization
+  optimization:
+    use_kv_cache: true
+    compile_model: true  # torch.compile
+    batch_size: 1  # Real-time inference
+    
+# VR Integration
+vr:
+  # Unity connection
+  unity:
+    host: "localhost"
+    port: 5555
+    protocol: "tcp"
+    timeout: 1.0  # seconds
+  
+  # VRChat OSC
+  vrchat:
+    enabled: false
+    host: "localhost"
+    send_port: 9000
+    receive_port: 9001
+    
+  # Input processing
+  input_processing:
+    vision_fps: 30  # Process vision at 30 FPS
+    audio_sample_rate: 16000
+    proprioception_fps: 90  # VR tracking at 90 Hz
+    touch_update_rate: 60
+  
+  # Output streaming
+  output_streaming:
+    animation_fps: 90  # Match VR refresh rate
+    audio_buffer_size: 1024
+    reduce_latency: true
+
+# Monitoring
+monitoring:
+  log_latency: true
+  latency_target_ms: 50
+  log_memory_usage: true
+  profile_mode: false  # Enable for detailed profiling

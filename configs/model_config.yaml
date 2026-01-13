@@ -1,0 +1,98 @@
+# Model Architecture Configuration
+
+model:
+  name: "MultiModalCreature"
+  size: "1B"  # Options: 1B, 7B
+  
+  # Transformer backbone
+  transformer:
+    num_layers: 24
+    hidden_dim: 1536
+    num_attention_heads: 16
+    ffn_dim: 6144  # 4x hidden_dim
+    dropout: 0.1
+    attention_dropout: 0.1
+    activation: "gelu"
+    max_position_embeddings: 4096
+    layer_norm_eps: 1.0e-5
+  
+  # Input encoders
+  encoders:
+    internal_voice:
+      vocab_size: 50257  # GPT-2 tokenizer
+      embedding_dim: 1536
+      max_seq_length: 512
+    
+    external_voice:
+      vocab_size: 50257
+      embedding_dim: 1536
+      max_seq_length: 512
+    
+    audio:
+      sample_rate: 16000
+      hop_length: 320  # ~50 tokens/second
+      num_codebooks: 1
+      codebook_size: 1024
+      encoder_type: "cnn_transformer"  # Options: wav2vec, whisper, cnn_transformer
+    
+    vision:
+      image_size: 224
+      patch_size: 16
+      num_patches: 196  # (224/16)^2
+      encoder_type: "vit"  # Options: vit, resnet
+      pretrained: true
+    
+    proprioception:
+      num_joints: 24  # Full body tracking
+      encoding_dim: 256
+      temporal_window: 10  # frames
+    
+    touch:
+      num_contact_points: 10  # hands, feet, etc.
+      feature_dim: 128
+      surface_types: 8  # wood, metal, soft, etc.
+  
+  # Output decoders
+  decoders:
+    internal_text:
+      vocab_size: 50257
+      head_dim: 1536
+      use_null_token: true
+    
+    external_text:
+      vocab_size: 50257
+      head_dim: 1536
+      use_null_token: true
+    
+    audio:
+      codebook_size: 1024
+      head_dim: 1536
+      use_null_token: true
+      vocoder_type: "encodec"  # Options: encodec, hifigan
+    
+    animation:
+      num_joints: 24
+      num_blend_shapes: 51  # ARKit standard
+      output_dim: 256
+      output_type: "continuous"  # Not discrete tokens
+  
+  # Token fusion strategy
+  fusion:
+    strategy: "concatenate"  # Options: concatenate, cross_attention, learned_fusion
+    modality_embeddings: true  # Add learned embeddings to distinguish modalities
+    positional_encoding_type: "learned"  # Options: learned, sinusoidal
+
+# Loss weights
+loss_weights:
+  internal_text: 1.0
+  external_text: 1.0
+  audio: 0.8
+  animation: 0.6
+  synchronization: 0.5  # Cross-modal consistency loss
+  
+# Sampling configuration
+sampling:
+  temperature: 0.8
+  top_k: 50
+  top_p: 0.9
+  repetition_penalty: 1.2

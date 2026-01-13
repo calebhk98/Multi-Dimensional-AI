@@ -1,0 +1,131 @@
+# Evolutionary Training Configuration
+
+evolution:
+  # Population parameters
+  population_size: 100
+  num_generations: 200
+  elitism_count: 5  # Keep top N unchanged
+  
+  # Selection
+  selection:
+    method: "tournament"  # Options: tournament, roulette, rank
+    tournament_size: 5
+    selection_rate: 0.2  # Top 20% survive
+  
+  # Genetic operations
+  crossover:
+    rate: 0.7
+    method: "layer_wise"  # Options: layer_wise, weight_blend, behavioral
+    blend_alpha: 0.5  # For weight blending
+  
+  mutation:
+    rate: 0.01
+    strategy: "adaptive"  # Options: fixed, adaptive
+    initial_std: 0.02
+    final_std: 0.001
+    methods:
+      weight_noise: true
+      temperature_adjust: true
+      attention_pruning: false  # More experimental
+  
+  # Fitness function
+  fitness:
+    # Weights (must sum to 1.0)
+    weights:
+      social_interaction: 0.25
+      navigation: 0.20
+      task_completion: 0.20
+      survival: 0.15
+      efficiency: 0.10
+      naturalness: 0.05
+      novelty: 0.05
+    
+    # Metrics configuration
+    social_interaction:
+      conversation_quality_weight: 0.6
+      response_appropriateness_weight: 0.4
+      
+    navigation:
+      path_efficiency_weight: 0.5
+      collision_avoidance_weight: 0.3
+      spatial_awareness_weight: 0.2
+      
+    task_completion:
+      success_rate_weight: 0.7
+      time_efficiency_weight: 0.3
+      
+    survival:
+      health_maintenance_weight: 0.6
+      danger_avoidance_weight: 0.4
+      
+    efficiency:
+      action_economy_weight: 0.5
+      energy_usage_weight: 0.5
+      
+    naturalness:
+      human_rating_required: true
+      rating_frequency: 10  # Every 10 generations
+      
+    novelty:
+      behavior_archive_size: 1000
+      diversity_threshold: 0.1
+
+# VR Evaluation Environment
+evaluation:
+  # Unity environment
+  unity_executable: ""  # Path to headless Unity build
+  num_parallel_envs: 10  # Run 10 creatures in parallel
+  max_episode_length: 1000  # steps
+  timeout: 300  # seconds per episode
+  
+  # Test scenarios
+  scenarios:
+    - name: "social_greeting"
+      weight: 0.2
+      description: "Meet and greet another entity"
+      
+    - name: "object_manipulation"
+      weight: 0.15
+      description: "Pick up and move objects"
+      
+    - name: "navigation_maze"
+      weight: 0.15
+      description: "Navigate through obstacle course"
+      
+    - name: "conversation"
+      weight: 0.20
+      description: "Multi-turn dialogue"
+      
+    - name: "exploration"
+      weight: 0.15
+      description: "Explore new environment"
+      
+    - name: "survival"
+      weight: 0.15
+      description: "Avoid dangers, maintain health"
+  
+  # Data collection
+  collect_data: true
+  save_best_episodes: true
+  record_video: false  # Disable for speed
+
+# Checkpointing
+checkpointing:
+  save_dir: "./checkpoints/evolution"
+  save_frequency: 5  # Every 5 generations
+  save_population: true
+  save_fitness_history: true
+  
+# Distributed evaluation
+distributed:
+  enabled: false
+  num_workers: 4
+  use_ray: true  # Use Ray for distribution
+  
+# Logging
+logging:
+  log_dir: "./logs/evolution"
+  log_fitness_stats: true
+  log_diversity_metrics: true
+  log_best_behaviors: true
+  use_wandb: true
