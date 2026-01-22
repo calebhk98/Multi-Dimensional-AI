@@ -38,12 +38,28 @@ class VisualEncoder(nn.Module):
             in_channels: Number of input channels (3 for RGB)
             embedding_dim: Embedding dimension
             num_layers: Number of transformer layers
-            num_heads: Number of attention heads
+            num_heads: Number of attention heads (will be adjusted if not divisible by embedding_dim)
             mlp_ratio: MLP hidden dim ratio
             dropout: Dropout probability
             use_stereo: Whether to process left/right eyes separately
         """
         super().__init__()
+        
+        # Ensure num_heads divides embedding_dim
+        if embedding_dim % num_heads != 0:
+            # Try to find a valid num_heads
+            original_heads = num_heads
+            # If embedding_dim is small (e.g. 32), 12 won't work. 8 or 4 might.
+            # If embedding_dim is large (e.g. 1536), 12 works.
+            # Let's try to match user intent or find largest divisor <= num_heads
+            candidates = [h for h in range(num_heads, 0, -1) if embedding_dim % h == 0]
+            if candidates:
+                num_heads = candidates[0]
+            else:
+                num_heads = 1 # Fallback
+            
+            # Warn if possible? No logger set up.
+
         
         self.image_size = image_size
         self.patch_size = patch_size

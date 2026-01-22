@@ -72,9 +72,17 @@ class TouchEncoder(nn.Module):
         )
         
         # Aggregate multiple contacts
+        # Calculate safe num_heads
+        num_heads = 8
+        if embedding_dim % num_heads != 0:
+            for h in [4, 2, 1]:
+                 if embedding_dim % h == 0:
+                     num_heads = h
+                     break
+
         self.contact_aggregator = nn.MultiheadAttention(
             embed_dim=embedding_dim,
-            num_heads=8,
+            num_heads=num_heads,
             dropout=dropout,
             batch_first=True,
         )

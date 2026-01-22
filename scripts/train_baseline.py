@@ -66,28 +66,27 @@ def main():
     
     if args.modality == "text":
         loss_weights["internal_text"] = 1.0
-        loss_weights["external_text"] = 1.0 # Train both text heads
+        loss_weights["external_text"] = 1.0 
     elif args.modality == "audio":
         loss_weights["audio"] = 1.0
     elif args.modality == "proprioception":
-        loss_weights["animation"] = 1.0 # Proprioception input -> Animation output
-        # (Assuming we want to learn auto-encoding of body movement)
+        loss_weights["animation"] = 1.0
+    elif args.modality == "vision":
+        # Vision has no direct decoder in current architecture (it informs other actions)
+        # To verify it trains, we can attach a dummy auxiliary loss or just verify forward pass.
+        # For this baseline, we'll just enable internal text loss driven by vision input
+        # to ensure gradients flow back to the visual encoder.
+        loss_weights["internal_text"] = 1.0
     
     # Inject loss weights into config/model
     if config.model is None: config.model = {}
     config.model["loss_weights"] = loss_weights
     
-    # Note: Model constructor loaded weights from config. 
-    # But MultiModalCreature.compute_loss uses the argument if provided, 
-    # or falls back to self.config. Since we passed config dict to init, 
-    # we might need to patch the instance attribute or pass weights to compute_loss.
-    # The Generic Trainer calls model.compute_loss(outputs, targets). 
-    # It doesn't pass weights explicitly.
-    # So let's monkeypatch the models config dictionary or trust that I updated it before init?
-    # I updated it AFTER init roughly above (logic flow). 
-    # Let's re-init or just set attributes manually if possible.
-    # Actually, MultiModalCreature stores self.config.
-    model.config["loss_weights"] = loss_weights
+    # Ensure model config is updated
+    if hasattr(model, 'config'):
+        model.config["loss_weights"] = loss_weights
+    else:
+        print("Warning: Could not update model config with loss weights")
     
     print(f"Starting training for modality: {args.modality}")
     trainer = Trainer(model, config.__dict__, dataloader)

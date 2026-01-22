@@ -146,10 +146,17 @@ class ProprioceptionEncoder(nn.Module):
         # [B*T, num_joints, pos_dim + rot_dim]
         
         # Add velocities if enabled
-        if self.use_velocity and previous_positions is not None:
-            pos_vel = self.compute_velocity(positions_flat, previous_positions)
-            rot_vel = self.compute_velocity(rotations_flat, previous_rotations)
-            joint_features = torch.cat([joint_features, pos_vel, rot_vel], dim=-1)
+        if self.use_velocity:
+            if previous_positions is not None:
+                pos_vel = self.compute_velocity(positions_flat, previous_positions)
+                rot_vel = self.compute_velocity(rotations_flat, previous_rotations)
+                joint_features = torch.cat([joint_features, pos_vel, rot_vel], dim=-1)
+            else:
+                # Pad with zeros if no previous state provided
+                # Shape: [B*T, num_joints, pos_dim + rot_dim]
+                zeros_pos = torch.zeros_like(positions_flat)
+                zeros_rot = torch.zeros_like(rotations_flat)
+                joint_features = torch.cat([joint_features, zeros_pos, zeros_rot], dim=-1)
         
         # Encode each joint
         encoded_joints = self.joint_encoder(joint_features)
