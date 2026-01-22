@@ -11,11 +11,11 @@ from src.encoders.proprioception_encoder import ProprioceptionEncoder
 from src.encoders.touch_encoder import TouchEncoder
 
 __all__ = [
-    "VoiceTokenizer",
-    "InternalVoiceEncoder",
-    "ExternalVoiceEncoder",
-    "AudioEncoder",
-    "VisualEncoder",
-    "ProprioceptionEncoder",
-    "TouchEncoder",
+	"VoiceTokenizer",
+	"InternalVoiceEncoder",
+	"ExternalVoiceEncoder",
+	"AudioEncoder",
+	"VisualEncoder",
+	"ProprioceptionEncoder",
+	"TouchEncoder",
 ]

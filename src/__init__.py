@@ -11,6 +11,6 @@ from src.models.multimodal_transformer import MultiModalCreature
 from src.config import Config
 
 __all__ = [
-    "MultiModalCreature",
-    "Config",
+	"MultiModalCreature",
+	"Config",
 ]
