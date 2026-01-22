@@ -132,7 +132,7 @@ class VoiceTokenizer:
             texts,
             max_length=self.max_seq_length,
             truncation=True,
-            padding=True,
+            padding="max_length",
             return_tensors="pt",
             **kwargs
         )

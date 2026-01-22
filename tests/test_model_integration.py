@@ -8,6 +8,13 @@ from src.models import MultiModalCreature
 from src.data.synthetic_generator import SyntheticDataGenerator
 
 def test_model_forward_pass():
+    """
+    Integration Test: Full Model Forward Pass.
+    
+    Verifies that the MultiModalCreature model can be instantiated with a minimal 
+    config, accept inputs from all 6 modalities, and produce outputs for all 
+    4 decoding streams without crashing.
+    """
     # Setup minimal config
     config = {
         "model": {
@@ -73,6 +80,12 @@ def test_model_forward_pass():
     assert isinstance(outputs['internal_text']['tokens'], torch.Tensor)
 
 def test_model_loss_computation():
+    """
+    Integration Test: Full Model Loss Computation.
+    
+    Verifies that the model's compute_loss method can process outputs and targets
+    to produce a scalar loss and a dictionary of individual losses.
+    """
     # Similar setup as above
     config = {
         "model": {
