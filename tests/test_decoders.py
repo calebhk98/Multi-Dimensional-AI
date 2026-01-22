@@ -33,7 +33,18 @@ def test_text_decoder(batch_size, seq_len, embedding_dim):
     targets = torch.randint(0, 1000, (batch_size, seq_len))
     loss = decoder.compute_loss(hidden_states, targets)
     assert isinstance(loss, torch.Tensor)
+    assert isinstance(loss, torch.Tensor)
     assert loss.ndim == 0 # Scalar
+
+def test_text_decoder_error_handling(embedding_dim):
+    """
+    Bad Path: Input dimension mismatch.
+    """
+    decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=embedding_dim)
+    # Pass wrong embedding dim (e.g. +1)
+    bad_states = torch.randn(2, 10, embedding_dim + 1)
+    with pytest.raises(RuntimeError):
+        decoder(bad_states)
 
 def test_audio_decoder(batch_size, seq_len, embedding_dim):
     decoder = AudioDecoder(codebook_size=256, embedding_dim=embedding_dim)
