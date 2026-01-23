@@ -25,6 +25,16 @@ class Trainer:
 		val_loader: Optional[DataLoader] = None,
 		device: str = "cuda" if torch.cuda.is_available() else "cpu",
 	):
+		"""
+		Initialize trainer.
+
+		Args:
+			model: Multi-modal creature model to train
+			config: Configuration dictionary
+			train_loader: DataLoader for training data
+			val_loader: DataLoader for validation data (optional)
+			device: Device string ('cuda' or 'cpu') to train on
+		"""
 		self.model = model.to(device)
 		self.config = config
 		self.train_loader = train_loader
@@ -51,7 +61,15 @@ class Trainer:
 		self.logger = logging.getLogger(__name__)
 
 	def train_step(self, batch: Dict[str, Any]) -> Tuple[torch.Tensor, Dict[str, float]]:
-		"""Execute one training step."""
+		"""
+		Execute one training step.
+
+		Args:
+			batch: Batch of data containing 'inputs' and 'targets'
+
+		Returns:
+			Tuple of (loss_tensor, loss_dict_for_logging)
+		"""
 		# Move inputs to device
 		inputs = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v 
 				for k, v in batch["inputs"].items()}
@@ -125,6 +143,13 @@ class Trainer:
 		self.save_checkpoint(step, final=True)
 
 	def save_checkpoint(self, step: int, final: bool = False):
+		"""
+		Save model checkpoint.
+
+		Args:
+			step: Current training step
+			final: Whether this is the final model save after training completes
+		"""
 		name = "model_final.pt" if final else f"model_step_{step}.pt"
 		path = self.save_dir / name
 		torch.save({

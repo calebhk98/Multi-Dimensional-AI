@@ -30,18 +30,59 @@ class VisualEncoder(nn.Module):
 		use_stereo: bool = True,
 	):
 		"""
-		Initialize visual encoder.
-		
-		Args:
-			image_size: Input image size (assumes square)
-			patch_size: Size of image patches
-			in_channels: Number of input channels (3 for RGB)
-			embedding_dim: Embedding dimension
-			num_layers: Number of transformer layers
-			num_heads: Number of attention heads (will be adjusted if not divisible by embedding_dim)
-			mlp_ratio: MLP hidden dim ratio
-			dropout: Dropout probability
-			use_stereo: Whether to process left/right eyes separately
+		==============================================================================
+		Function: __init__
+		==============================================================================
+		Purpose:  Initializes the VisualEncoder module. Sets up the Vision Transformer
+		          (ViT) architecture, including patch embeddings, positional embeddings,
+		          and stereo vision support.
+
+		Parameters:
+		    - image_size: int
+		        Input image size (assumes square, default: 224).
+		    - patch_size: int
+		        Size of image patches (default: 16).
+		    - in_channels: int
+		        Number of input channels (default: 3 for RGB).
+		    - embedding_dim: int
+		        Embedding dimension (default: 1536).
+		    - num_layers: int
+		        Number of transformer encoder layers (default: 12).
+		    - num_heads: int
+		        Number of attention heads (default: 12).
+		    - mlp_ratio: int
+		        Ratio of MLP hidden dimension to embedding dimension (default: 4).
+		    - dropout: float
+		        Dropout probability (default: 0.1).
+		    - use_stereo: bool
+		        Whether to process left and right eyes separately (default: True).
+
+		Returns:
+		    None
+
+		Dependencies:
+		    - torch.nn.Conv2d
+		    - torch.nn.TransformerEncoderLayer
+		    - torch.nn.TransformerEncoder
+		    - torch.nn.LayerNorm
+		    - torch.nn.Dropout
+
+		Processing Workflow:
+		    1.  Store configuration parameters.
+		    2.  Calculate number of patches.
+		    3.  Initialize `patch_embed` (Conv2d) layer.
+		    4.  Initialize `position_embedding`.
+		    5.  Initialize `left_eye_embedding` and `right_eye_embedding` if stereo is used.
+		    6.  Initialize `modality_embedding`.
+		    7.  Construct `transformer` encoder with specified layers and heads.
+		    8.  Initialize `dropout` and `layer_norm`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    model = VisualEncoder(image_size=224, patch_size=16, embedding_dim=768)
+		==============================================================================
 		"""
 		super().__init__()
 		
@@ -120,16 +161,50 @@ class VisualEncoder(nn.Module):
 		right_image: Optional[torch.Tensor] = None,
 	) -> Dict[str, torch.Tensor]:
 		"""
-		Encode stereo images.
-		
-		Args:
-			left_image: Left eye image [batch, channels, height, width]
-			right_image: Right eye image [batch, channels, height, width] (optional)
-			
+		==============================================================================
+		Function: forward
+		==============================================================================
+		Purpose:  Processes stereo image inputs into embeddings using a Vision Transformer.
+
+		Parameters:
+		    - left_image: torch.Tensor
+		        Left eye image tensor [batch, channels, height, width].
+		    - right_image: Optional[torch.Tensor]
+		        Right eye image tensor [batch, channels, height, width] (optional).
+
 		Returns:
-			Dictionary containing:
-				- embeddings: Encoded embeddings [batch, num_patches*2, embed_dim] if stereo
-				- attention_mask: All ones [batch, num_patches*2]
+		    Dict[str, torch.Tensor] - Dictionary containing:
+		        - "embeddings": Encoded embeddings [batch, seq_len, embed_dim].
+		        - "attention_mask": Attention mask [batch, seq_len].
+
+		Dependencies:
+		    - self.patch_embed
+		    - self.transformer
+		    - self.position_embedding
+		    - self.left_eye_embedding
+		    - self.right_eye_embedding
+		    - self.modality_embedding
+
+		Processing Workflow:
+		    1.  Process `left_image` into patches.
+		    2.  Flatten patches to sequence.
+		    3.  Add `position_embedding`.
+		    4.  Add `left_eye_embedding` if stereo.
+		    5.  Add `modality_embedding`.
+		    6.  If `right_image` exists and stereo is enabled:
+		        a. Process `right_image` into patches.
+		        b. Add position, right eye, and modality embeddings.
+		        c. Concatenate left and right patches.
+		    7.  Apply layer norm and dropout.
+		    8.  Pass through `transformer` encoder.
+		    9.  Generate attention mask.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    output = model(left_img, right_img)
+		==============================================================================
 		"""
 		batch_size = left_image.shape[0]
 		
@@ -181,5 +256,29 @@ class VisualEncoder(nn.Module):
 		}
 	
 	def get_output_dim(self) -> int:
-		"""Get output embedding dimension."""
+		"""
+		==============================================================================
+		Function: get_output_dim
+		==============================================================================
+		Purpose:  Returns the size of the output embeddings produced by this encoder.
+
+		Parameters:
+		    - None
+
+		Returns:
+		    int - Embedding dimension size (e.g., 1536).
+
+		Dependencies:
+		    - None
+
+		Processing Workflow:
+		    1.  Return `self.embedding_dim`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    dim = model.get_output_dim()
+		==============================================================================
+		"""
 		return self.embedding_dim

@@ -1,4 +1,7 @@
 
+"""
+Tests for Transformer masking implementation.
+"""
 import pytest
 import torch
 import torch.nn as nn
@@ -11,6 +14,12 @@ class TestTransformerMasking:
 
 	@pytest.fixture
 	def model_config(self):
+		"""
+		Fixture providing standard model configuration for tests.
+
+		Returns:
+			Dictionary with model hyperparameters
+		"""
 		return {
 			"num_layers": 2,
 			"hidden_dim": 32,
@@ -24,6 +33,9 @@ class TestTransformerMasking:
 		"""
 		Happy Path: Ensure the backbone runs without error when a padding mask is provided.
 		This validates the fix for the 4D mask crash.
+		
+		Args:
+			model_config: Test model configuration
 		"""
 		model = TransformerBackbone(**model_config)
 		bs, seq_len = 2, 10
@@ -46,6 +58,9 @@ class TestTransformerMasking:
 		Logic Check: Ensure that padding tokens do not affect the output of valid tokens.
 		If attention is properly masked, changing the content of padded tokens should not change 
 		the output valid tokens.
+		
+		Args:
+			model_config: Test model configuration
 		"""
 		# Single layer to pinpoint attention effect
 		model = TransformerBackbone(num_layers=1, hidden_dim=32, num_heads=4, ffn_dim=64, dropout=0.0, attention_dropout=0.0)

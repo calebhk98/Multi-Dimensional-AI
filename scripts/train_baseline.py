@@ -11,6 +11,50 @@ from src.data import CreatureDataset, collate_fn  # Need to ensure dataset.py ha
 from src.training import Trainer
 
 def main():
+	"""
+	==============================================================================
+	Function: main
+	==============================================================================
+	Purpose:  Main entry point for the training script. Parses command-line arguments,
+	          initializes the configuration, model, and dataset, and launches the
+	          training loop for a specified single modality baseline.
+
+	Parameters:
+	    - None
+
+	Returns:
+	    None
+
+	Dependencies:
+	    - argparse
+	    - src.config.Config
+	    - src.models.MultiModalCreature
+	    - src.data.CreatureDataset
+	    - src.training.Trainer
+	    - torch.utils.data.DataLoader
+
+	Processing Workflow:
+	    1.  Parse command-line arguments (modality, config, steps).
+	    2.  Load training configuration from file.
+	    3.  Override max steps and save interval for baseline testing.
+	    4.  Initialize the `MultiModalCreature` model.
+	    5.  Freezing logic explanation (note: we do not freeze, but mask loss).
+	    6.  Create synthetic `CreatureDataset` and `DataLoader`.
+	    7.  Configure loss weights to isolate the target modality:
+	        - text: internal and external text loss = 1.0
+	        - audio: audio loss = 1.0
+	        - proprioception: animation loss = 1.0
+	        - vision: internal text loss = 1.0 (proxy)
+	    8.  Inject loss weights into config/model.
+	    9.  Initialize `Trainer` and start training.
+
+	ToDo:
+	    - Implement actual parameter freezing for stricter baselines.
+
+	Usage:
+	    python scripts/train_baseline.py --modality audio --steps 50
+	==============================================================================
+	"""
 	parser = argparse.ArgumentParser(description="Train single modality baseline")
 	parser.add_argument("--modality", type=str, required=True, 
 						choices=["text", "audio", "vision", "proprioception"],

@@ -1,3 +1,6 @@
+"""
+Setup script for multi-dimensional-ai package.
+"""
 from setuptools import setup, find_packages
 
 setup(

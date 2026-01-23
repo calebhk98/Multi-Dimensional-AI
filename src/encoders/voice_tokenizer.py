@@ -27,12 +27,42 @@ class VoiceTokenizer:
 		add_special_tokens: bool = True,
 	):
 		"""
-		Initialize voice tokenizer.
-		
-		Args:
-			vocab_size: Size of vocabulary
-			max_seq_length: Maximum sequence length
-			add_special_tokens: Whether to add special tokens for null/padding
+		==============================================================================
+		Function: __init__
+		==============================================================================
+		Purpose:  Initializes the VoiceTokenizer using a pre-trained GPT-2 tokenizer.
+		          Configures vocabulary size, sequence length, and special tokens
+		          (pad, null) for processing voice inputs.
+
+		Parameters:
+		    - vocab_size: int
+		        Target vocabulary size (default: 50257).
+		    - max_seq_length: int
+		        Maximum sequence length for encoding (default: 512).
+		    - add_special_tokens: bool
+		        Whether to add custom special tokens like <NULL> and <PAD> (default: True).
+
+		Returns:
+		    None
+
+		Dependencies:
+		    - transformers.GPT2Tokenizer
+
+		Processing Workflow:
+		    1.  Store configuration parameters.
+		    2.  Load pre-trained 'gpt2' tokenizer.
+		    3.  If `add_special_tokens` is True:
+		        a. Add `<NULL>` and `<PAD>` tokens.
+		        b. Update vocabulary size.
+		    4.  Store IDs for special tokens.
+		    5.  Set the padding token.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    tokenizer = VoiceTokenizer()
+		==============================================================================
 		"""
 		self.vocab_size = vocab_size
 		self.max_seq_length = max_seq_length
@@ -64,17 +94,41 @@ class VoiceTokenizer:
 		return_tensors: str = "pt",
 	) -> Dict[str, torch.Tensor]:
 		"""
-		Encode text to token IDs.
-		
-		Args:
-			text: Input text string
-			add_special_tokens: Add BOS/EOS tokens
-			truncation: Truncate to max_seq_length
-			padding: Padding strategy
-			return_tensors: Return format ('pt' for PyTorch)
-			
+		==============================================================================
+		Function: encode
+		==============================================================================
+		Purpose:  Encodes a single text string into token IDs.
+
+		Parameters:
+		    - text: str
+		        Input text string to encode.
+		    - add_special_tokens: bool
+		        Whether to add BOS/EOS tokens (default: True).
+		    - truncation: bool
+		        Whether to truncate to `max_seq_length` (default: True).
+		    - padding: str
+		        Padding strategy (default: "max_length").
+		    - return_tensors: str
+		        Return format, e.g., 'pt' for PyTorch tensors (default: "pt").
+
 		Returns:
-			Dictionary with 'input_ids' and 'attention_mask'
+		    Dict[str, torch.Tensor] - Dictionary containing:
+		        - "input_ids": Token IDs tensor.
+		        - "attention_mask": Attention mask tensor.
+
+		Dependencies:
+		    - self.tokenizer
+
+		Processing Workflow:
+		    1.  Call `self.tokenizer` with provided arguments.
+		    2.  Return the encoding result.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    encoding = tokenizer.encode("Hello world")
+		==============================================================================
 		"""
 		encoding = self.tokenizer(
 			text,
@@ -93,14 +147,35 @@ class VoiceTokenizer:
 		skip_special_tokens: bool = True,
 	) -> str:
 		"""
-		Decode token IDs back to text.
-		
-		Args:
-			token_ids: Tensor of token IDs [seq_len] or [batch, seq_len]
-			skip_special_tokens: Skip special tokens in output
-			
+		==============================================================================
+		Function: decode
+		==============================================================================
+		Purpose:  Decodes a sequence of token IDs back into a text string.
+
+		Parameters:
+		    - token_ids: torch.Tensor
+		        Tensor of token IDs, shape [seq_len] or [batch, seq_len].
+		    - skip_special_tokens: bool
+		        Whether to remove special tokens from the output string (default: True).
+
 		Returns:
-			Decoded text string
+		    str - Decoded text string.
+
+		Dependencies:
+		    - self.tokenizer.decode
+
+		Processing Workflow:
+		    1.  Check dimensions of `token_ids`; if 2D, take the first sequence.
+		    2.  Convert tensor to list.
+		    3.  Decode list using `self.tokenizer.decode`.
+		    4.  Return the resulting string.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    text = tokenizer.decode(token_ids)
+		==============================================================================
 		"""
 		# Handle batch dimension
 		if token_ids.dim() == 2:
@@ -119,14 +194,35 @@ class VoiceTokenizer:
 		**kwargs
 	) -> Dict[str, torch.Tensor]:
 		"""
-		Encode multiple texts.
-		
-		Args:
-			texts: List of text strings
-			**kwargs: Additional arguments for encode()
-			
+		==============================================================================
+		Function: batch_encode
+		==============================================================================
+		Purpose:  Encodes a list of text strings into a batch of token IDs.
+
+		Parameters:
+		    - texts: List[str]
+		        List of input text strings.
+		    - **kwargs:
+		        Additional arguments passed to `self.tokenizer` (e.g., padding, truncation).
+
 		Returns:
-			Batched encoding dictionary
+		    Dict[str, torch.Tensor] - Batched encoding dictionary containing `input_ids`
+		    and `attention_mask`.
+
+		Dependencies:
+		    - self.tokenizer
+
+		Processing Workflow:
+		    1.  Call `self.tokenizer` with list of texts.
+		    2.  Set defaults for max_length, truncation, and padding if not overridden.
+		    3.  Return the batched encoding.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    batch_enc = tokenizer.batch_encode(["Hello", "World"])
+		==============================================================================
 		"""
 		return self.tokenizer(
 			texts,
@@ -143,14 +239,34 @@ class VoiceTokenizer:
 		**kwargs
 	) -> List[str]:
 		"""
-		Decode multiple token sequences.
-		
-		Args:
-			token_ids: Tensor of token IDs [batch, seq_len]
-			**kwargs: Additional arguments for decode()
-			
+		==============================================================================
+		Function: batch_decode
+		==============================================================================
+		Purpose:  Decodes a batch of token ID sequences back into a list of strings.
+
+		Parameters:
+		    - token_ids: torch.Tensor
+		        Tensor of token IDs [batch, seq_len].
+		    - **kwargs:
+		        Additional arguments passed to `self.tokenizer.batch_decode`.
+
 		Returns:
-			List of decoded text strings
+		    List[str] - List of decoded text strings.
+
+		Dependencies:
+		    - self.tokenizer.batch_decode
+
+		Processing Workflow:
+		    1.  Convert `token_ids` to list.
+		    2.  Call `self.tokenizer.batch_decode`.
+		    3.  Return the list of strings.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    texts = tokenizer.batch_decode(batch_ids)
+		==============================================================================
 		"""
 		return self.tokenizer.batch_decode(
 			token_ids.tolist(),
@@ -159,9 +275,57 @@ class VoiceTokenizer:
 		)
 	
 	def get_vocab_size(self) -> int:
-		"""Get vocabulary size including special tokens."""
+		"""
+		==============================================================================
+		Function: get_vocab_size
+		==============================================================================
+		Purpose:  Returns the current vocabulary size of the tokenizer.
+
+		Parameters:
+		    - None
+
+		Returns:
+		    int - Vocabulary size (including special tokens).
+
+		Dependencies:
+		    - len(self.tokenizer)
+
+		Processing Workflow:
+		    1.  Return the length of the tokenizer.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    size = tokenizer.get_vocab_size()
+		==============================================================================
+		"""
 		return len(self.tokenizer)
 	
 	def __len__(self) -> int:
-		"""Return vocabulary size."""
+		"""
+		==============================================================================
+		Function: __len__
+		==============================================================================
+		Purpose:  Returns the vocabulary size (allows `len(tokenizer)`).
+
+		Parameters:
+		    - None
+
+		Returns:
+		    int - Vocabulary size.
+
+		Dependencies:
+		    - self.get_vocab_size
+
+		Processing Workflow:
+		    1.  Call `self.get_vocab_size()`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    size = len(tokenizer)
+		==============================================================================
+		"""
 		return self.get_vocab_size()

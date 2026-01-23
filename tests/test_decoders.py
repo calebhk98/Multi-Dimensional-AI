@@ -10,14 +10,32 @@ from src.decoders.animation_decoder import AnimationDecoder
 
 @pytest.fixture
 def batch_size():
+	"""
+	Fixture for batch size used in tests.
+
+	Returns:
+		Batch size integer
+	"""
 	return 4
 
 @pytest.fixture
 def seq_len():
+	"""
+	Fixture for sequence length used in tests.
+
+	Returns:
+		Sequence length integer
+	"""
 	return 10
 
 @pytest.fixture
 def embedding_dim():
+	"""
+	Fixture for embedding dimension used in tests.
+
+	Returns:
+		Embedding dimension size
+	"""
 	return 1536
 
 def test_text_decoder(batch_size, seq_len, embedding_dim):
@@ -25,6 +43,11 @@ def test_text_decoder(batch_size, seq_len, embedding_dim):
 	Happy Path: Text Decoder.
 	
 	Verifies generation of token IDs from hidden states and scalar loss computation.
+	
+	Args:
+		batch_size: Test batch size
+		seq_len: Test sequence length
+		embedding_dim: Test embedding dimension
 	"""
 	decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=embedding_dim)
 	hidden_states = torch.randn(batch_size, seq_len, embedding_dim)
@@ -44,6 +67,9 @@ def test_text_decoder(batch_size, seq_len, embedding_dim):
 def test_text_decoder_error_handling(embedding_dim):
 	"""
 	Bad Path: Input dimension mismatch.
+	
+	Args:
+		embedding_dim: Test embedding dimension
 	"""
 	decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=embedding_dim)
 	# Pass wrong embedding dim (e.g. +1)
@@ -56,6 +82,11 @@ def test_audio_decoder(batch_size, seq_len, embedding_dim):
 	Happy Path: Audio Decoder.
 	
 	Verifies decoding of hidden states to discrete audio codes.
+	
+	Args:
+		batch_size: Test batch size
+		seq_len: Test sequence length
+		embedding_dim: Test embedding dimension
 	"""
 	decoder = AudioDecoder(codebook_size=256, embedding_dim=embedding_dim)
 	hidden_states = torch.randn(batch_size, seq_len, embedding_dim)
@@ -73,6 +104,11 @@ def test_animation_decoder(batch_size, seq_len, embedding_dim):
 	
 	Verifies prediction of joint rotations, blend shapes, and eye params.
 	Tests complex loss calculation combining rotation, position, and specialized losses.
+	
+	Args:
+		batch_size: Test batch size
+		seq_len: Test sequence length
+		embedding_dim: Test embedding dimension
 	"""
 	decoder = AnimationDecoder(embedding_dim=embedding_dim, num_joints=24)
 	hidden_states = torch.randn(batch_size, seq_len, embedding_dim)

@@ -30,16 +30,55 @@ class AudioEncoder(nn.Module):
 		dropout: float = 0.1,
 	):
 		"""
-		Initialize audio encoder.
-		
-		Args:
-			sample_rate: Audio sample rate in Hz
-			hop_length: Hop length for frame extraction
-			embedding_dim: Output embedding dimension
-			num_conv_layers: Number of convolutional layers
-			conv_channels: Number of channels in conv layers
-			codebook_size: Size of discrete audio codebook
-			dropout: Dropout probability
+		==============================================================================
+		Function: __init__
+		==============================================================================
+		Purpose:  Initializes the AudioEncoder module. Sets up the CNN feature
+		          extractor, codebook for quantization, and transformer-ready
+		          embedding layers for raw audio processing.
+
+		Parameters:
+		    - sample_rate: int
+		        Audio sample rate in Hz (default: 16000).
+		    - hop_length: int
+		        Hop length for frame extraction (default: 320 for ~50 tokens/sec).
+		    - embedding_dim: int
+		        Output embedding dimension (default: 1536).
+		    - num_conv_layers: int
+		        Number of convolutional layers for downsampling (default: 7).
+		    - conv_channels: int
+		        Number of channels in convolutional layers (default: 512).
+		    - codebook_size: int
+		        Size of discrete audio codebook (default: 1024).
+		    - dropout: float
+		        Dropout probability (default: 0.1).
+
+		Returns:
+		    None
+
+		Dependencies:
+		    - torch.nn.Conv1d
+		    - torch.nn.GroupNorm
+		    - torch.nn.GELU
+		    - torch.nn.Embedding
+		    - torch.nn.Linear
+		    - torch.nn.Dropout
+		    - torch.nn.LayerNorm
+
+		Processing Workflow:
+		    1.  Store configuration parameters.
+		    2.  Construct `feature_extractor` using a stack of Conv1d, GroupNorm, and GELU layers.
+		    3.  Define `projection` layer to map to embedding dimension.
+		    4.  Initialize `codebook` for vector quantization.
+		    5.  Initialize `positional_encoding` and `modality_embedding`.
+		    6.  Initialize `dropout` and `layer_norm`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    model = AudioEncoder(sample_rate=16000, embedding_dim=512)
+		==============================================================================
 		"""
 		super().__init__()
 		
@@ -92,15 +131,40 @@ class AudioEncoder(nn.Module):
 	
 	def quantize(self, features: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
 		"""
-		Quantize continuous features to discrete codes.
-		
-		Args:
-			features: Continuous features [batch, seq_len, embed_dim]
-			
+		==============================================================================
+		Function: quantize
+		==============================================================================
+		Purpose:  Quantizes continuous features into discrete codes using a codebook
+		          (Vector Quantization). Uses the Straight-Through Estimator for
+		          backpropagation.
+
+		Parameters:
+		    - features: torch.Tensor
+		        Continuous features tensor [batch, seq_len, embed_dim].
+
 		Returns:
-			Tuple of:
-				- quantized: Quantized features [batch, seq_len, embed_dim]
-				- indices: Codebook indices [batch, seq_len]
+		    Tuple[torch.Tensor, torch.Tensor] - A tuple containing:
+		        - quantized: Quantized features tensor [batch, seq_len, embed_dim].
+		        - indices: Codebook indices tensor [batch, seq_len].
+
+		Dependencies:
+		    - self.codebook
+		    - torch.cdist
+
+		Processing Workflow:
+		    1.  Flatten input features.
+		    2.  Compute pairwise distances between features and codebook vectors.
+		    3.  Find indices of nearest codebook vectors.
+		    4.  Retrieve quantized vectors from codebook.
+		    5.  Reshape quantized vectors and indices back to [batch, seq_len].
+		    6.  Apply Straight-Through Estimator: `quantized = features + (quantized - features).detach()`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    quantized, indices = self.quantize(features)
+		==============================================================================
 		"""
 		batch_size, seq_len, embed_dim = features.shape
 		
@@ -134,17 +198,48 @@ class AudioEncoder(nn.Module):
 		return_indices: bool = False,
 	) -> Dict[str, torch.Tensor]:
 		"""
-		Encode audio waveform.
-		
-		Args:
-			waveform: Raw audio [batch_size, num_samples]
-			return_indices: Whether to return discrete indices
-			
+		==============================================================================
+		Function: forward
+		==============================================================================
+		Purpose:  Encodes raw audio waveforms into discrete token embeddings.
+
+		Parameters:
+		    - waveform: torch.Tensor
+		        Raw audio tensor [batch_size, num_samples].
+		    - return_indices: bool
+		        Calculates and returns discrete codebook indices if True (default: False).
+
 		Returns:
-			Dictionary containing:
-				- embeddings: Encoded embeddings [batch, seq_len, embed_dim]
-				- indices: Discrete codes [batch, seq_len] (if return_indices=True)
-				- attention_mask: All ones [batch, seq_len]
+		    Dict[str, torch.Tensor] - Dictionary containing:
+		        - "embeddings": Encoded embeddings [batch, seq_len, embed_dim].
+		        - "attention_mask": Attention mask [batch, seq_len].
+		        - "indices": Discrete code indices [batch, seq_len] (if return_indices is True).
+
+		Dependencies:
+		    - self.feature_extractor
+		    - self.projection
+		    - self.quantize
+		    - self.positional_encoding
+		    - self.modality_embedding
+
+		Processing Workflow:
+		    1.  Add channel dimension to waveform if needed.
+		    2.  Extract features using CNN `feature_extractor`.
+		    3.  Transpose frames to sequence dimension.
+		    4.  Project features to embedding dimension.
+		    5.  Quantize features to get discrete codes and indices.
+		    6.  Add `positional_encoding` (truncated to sequence length).
+		    7.  Add `modality_embedding`.
+		    8.  Apply layer norm and dropout.
+		    9.  Generate attention mask.
+		    10. Return dictionary result.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    output = model(waveform)
+		==============================================================================
 		"""
 		# Add channel dimension if needed
 		if waveform.dim() == 2:
@@ -194,5 +289,29 @@ class AudioEncoder(nn.Module):
 		return output
 	
 	def get_output_dim(self) -> int:
-		"""Get output embedding dimension."""
+		"""
+		==============================================================================
+		Function: get_output_dim
+		==============================================================================
+		Purpose:  Returns the size of the output embeddings produced by this encoder.
+
+		Parameters:
+		    - None
+
+		Returns:
+		    int - Embedding dimension size (e.g., 1536).
+
+		Dependencies:
+		    - None
+
+		Processing Workflow:
+		    1.  Return `self.embedding_dim`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    dim = model.get_output_dim()
+		==============================================================================
+		"""
 		return self.embedding_dim

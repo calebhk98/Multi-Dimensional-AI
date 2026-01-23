@@ -31,16 +31,54 @@ class ProprioceptionEncoder(nn.Module):
 		dropout: float = 0.1,
 	):
 		"""
-		Initialize proprioception encoder.
-		
-		Args:
-			num_joints: Number of tracked body joints
-			position_dim: Dimensionality of position (3 for 3D)
-			rotation_dim: Dimensionality of rotation (4 for quaternion)
-			embedding_dim: Output embedding dimension
-			temporal_window: Number of frames in temporal context
-			use_velocity: Whether to include velocities
-			dropout: Dropout probability
+		==============================================================================
+		Function: __init__
+		==============================================================================
+		Purpose:  Initializes the ProprioceptionEncoder module. Sets up the dimensions,
+		          layers (joint encoder, combiner, temporal encoder), and embeddings
+		          (temporal position and modality) required to process body state data.
+
+		Parameters:
+		    - num_joints: int
+		        Number of tracked body joints (default: 24).
+		    - position_dim: int
+		        Dimensionality of position (default: 3 for x, y, z).
+		    - rotation_dim: int
+		        Dimensionality of rotation (default: 4 for quaternion).
+		    - embedding_dim: int
+		        Output embedding dimension (default: 1536).
+		    - temporal_window: int
+		        Number of past frames to consider (default: 10).
+		    - use_velocity: bool
+		        Whether to include velocities in the input features (default: True).
+		    - dropout: float
+		        Dropout probability (default: 0.1).
+
+		Returns:
+		    None
+
+		Dependencies:
+		    - torch.nn.Sequential
+		    - torch.nn.Linear
+		    - torch.nn.LSTM
+		    - torch.nn.LayerNorm
+		    - torch.nn.Dropout
+
+		Processing Workflow:
+		    1.  Store configuration parameters.
+		    2.  Calculate input dimension per joint based on position, rotation, and velocities.
+		    3.  Define `joint_encoder` (MLP) to process individual joint features.
+		    4.  Define `joints_combiner` (Linear) to aggregate all joints.
+		    5.  Define `temporal_encoder` (LSTM) for sequence processing.
+		    6.  Initialize `temporal_position_embedding` and `modality_embedding`.
+		    7.  Initialize normalization and dropout layers.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    model = ProprioceptionEncoder(num_joints=24, embedding_dim=512)
+		==============================================================================
 		"""
 		super().__init__()
 		
@@ -97,15 +135,36 @@ class ProprioceptionEncoder(nn.Module):
 		dt: float = 1/90.0,  # 90 Hz VR tracking
 	) -> torch.Tensor:
 		"""
-		Compute velocity from current and previous states.
-		
-		Args:
-			current: Current state [batch, features]
-			previous: Previous state [batch, features]
-			dt: Time delta
-			
+		==============================================================================
+		Function: compute_velocity
+		==============================================================================
+		Purpose:  Computes the velocity between the current and previous states.
+		          Used for both position and rotation velocities.
+
+		Parameters:
+		    - current: torch.Tensor
+		        Current state tensor [batch, features].
+		    - previous: torch.Tensor
+		        Previous state tensor [batch, features].
+		    - dt: float
+		        Time delta between frames (default: 1/90.0 for 90 Hz VR).
+
 		Returns:
-			Velocity [batch, features]
+		    torch.Tensor - Velocity tensor [batch, features].
+
+		Dependencies:
+		    - None
+
+		Processing Workflow:
+		    1.  Subtract previous state from current state.
+		    2.  Divide by time delta `dt`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    vel = self.compute_velocity(curr_pos, prev_pos)
+		==============================================================================
 		"""
 		return (current - previous) / dt
 	
@@ -117,18 +176,54 @@ class ProprioceptionEncoder(nn.Module):
 		previous_rotations: Optional[torch.Tensor] = None,
 	) -> Dict[str, torch.Tensor]:
 		"""
-		Encode proprioceptive data.
-		
-		Args:
-			joint_positions: Joint positions [batch, temporal_window, num_joints, 3]
-			joint_rotations: Joint rotations [batch, temporal_window, num_joints, 4]
-			previous_positions: Previous positions for velocity calc (optional)
-			previous_rotations: Previous rotations for velocity calc (optional)
-			
+		==============================================================================
+		Function: forward
+		==============================================================================
+		Purpose:  Processes the proprioceptive input data (positions, rotations)
+		          through the encoding layers to produce embeddings.
+
+		Parameters:
+		    - joint_positions: torch.Tensor
+		        Joint positions [batch, temporal_window, num_joints, 3].
+		    - joint_rotations: torch.Tensor
+		        Joint rotations [batch, temporal_window, num_joints, 4].
+		    - previous_positions: Optional[torch.Tensor]
+		        Previous positions for velocity calculation (optional).
+		    - previous_rotations: Optional[torch.Tensor]
+		        Previous rotations for velocity calculation (optional).
+
 		Returns:
-			Dictionary containing:
-				- embeddings: Encoded embeddings [batch, temporal_window, embed_dim]
-				- attention_mask: All ones [batch, temporal_window]
+		    Dict[str, torch.Tensor] - Dictionary containing:
+		        - "embeddings": Encoded embeddings [batch, temporal_window, embed_dim]
+		        - "attention_mask": Attention mask [batch, temporal_window]
+
+		Dependencies:
+		    - self.joint_encoder
+		    - self.joints_combiner
+		    - self.temporal_encoder
+		    - self.compute_velocity (if use_velocity is True)
+		    - self.modality_embedding
+		    - self.temporal_position_embedding
+
+		Processing Workflow:
+		    1.  Flatten temporal dimension.
+		    2.  Concatenate position and rotation per joint.
+		    3.  Compute and append velocities if `use_velocity` is True (or pad with zeros).
+		    4.  Pass through `joint_encoder` (MLP) for each joint.
+		    5.  Flatten and pass through `joints_combiner` to get single vector per frame.
+		    6.  Reshape back to temporal sequence.
+		    7.  Add `temporal_position_embedding`.
+		    8.  Pass through `temporal_encoder` (LSTM).
+		    9.  Add `modality_embedding`.
+		    10. Apply layer norm and dropout.
+		    11. Generate attention mask.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    output = model(positions, rotations)
+		==============================================================================
 		"""
 		batch_size = joint_positions.shape[0]
 		temporal_len = joint_positions.shape[1]
@@ -203,5 +298,29 @@ class ProprioceptionEncoder(nn.Module):
 		}
 	
 	def get_output_dim(self) -> int:
-		"""Get output embedding dimension."""
+		"""
+		==============================================================================
+		Function: get_output_dim
+		==============================================================================
+		Purpose:  Returns the size of the output embeddings produced by this encoder.
+
+		Parameters:
+		    - None
+
+		Returns:
+		    int - Embedding dimension size (e.g., 1536).
+
+		Dependencies:
+		    - None
+
+		Processing Workflow:
+		    1.  Return `self.embedding_dim`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    dim = model.get_output_dim()
+		==============================================================================
+		"""
 		return self.embedding_dim

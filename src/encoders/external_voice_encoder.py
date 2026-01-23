@@ -23,13 +23,44 @@ class ExternalVoiceEncoder(nn.Module):
 		dropout: float = 0.1,
 	):
 		"""
-		Initialize external voice encoder.
-		
-		Args:
-			vocab_size: Vocabulary size
-			embedding_dim: Dimension of token embeddings
-			max_seq_length: Maximum sequence length
-			dropout: Dropout probability
+		==============================================================================
+		Function: __init__
+		==============================================================================
+		Purpose:  Initializes the ExternalVoiceEncoder module. Sets up embeddings for
+		          vocabulary tokens, positions, and modality, along with normalization
+		          and dropout layers.
+
+		Parameters:
+		    - vocab_size: int
+		        Size of the vocabulary (default: 50257 for GPT-2/RoBERTa style).
+		    - embedding_dim: int
+		        Dimension of token embeddings (default: 1536).
+		    - max_seq_length: int
+		        Maximum sequence length supported (default: 512).
+		    - dropout: float
+		        Dropout probability (default: 0.1).
+
+		Returns:
+		    None
+
+		Dependencies:
+		    - torch.nn.Embedding
+		    - torch.nn.Dropout
+		    - torch.nn.LayerNorm
+
+		Processing Workflow:
+		    1.  Store configuration parameters.
+		    2.  Initialize `token_embedding` layer.
+		    3.  Initialize `position_embedding` layer.
+		    4.  Initialize `modality_embedding` parameter.
+		    5.  Initialize `dropout` and `layer_norm`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    model = ExternalVoiceEncoder(vocab_size=50257, embedding_dim=512)
+		==============================================================================
 		"""
 		super().__init__()
 		
@@ -67,16 +98,43 @@ class ExternalVoiceEncoder(nn.Module):
 		attention_mask: Optional[torch.Tensor] = None,
 	) -> Dict[str, torch.Tensor]:
 		"""
-		Encode external voice tokens.
-		
-		Args:
-			input_ids: Token IDs [batch_size, seq_len]
-			attention_mask: Attention mask [batch_size, seq_len]
-			
+		==============================================================================
+		Function: forward
+		==============================================================================
+		Purpose:  Processes input token IDs into embeddings, adding positional and
+		          modality information.
+
+		Parameters:
+		    - input_ids: torch.Tensor
+		        Token IDs tensor [batch_size, seq_len].
+		    - attention_mask: Optional[torch.Tensor]
+		        Attention mask tensor [batch_size, seq_len].
+
 		Returns:
-			Dictionary containing:
-				- embeddings: Encoded embeddings [batch_size, seq_len, embed_dim]
-				- attention_mask: Attention mask [batch_size, seq_len]
+		    Dict[str, torch.Tensor] - Dictionary containing:
+		        - "embeddings": Encoded embeddings [batch_size, seq_len, embed_dim]
+		        - "attention_mask": Attention mask [batch_size, seq_len]
+
+		Dependencies:
+		    - self.token_embedding
+		    - self.position_embedding
+		    - self.modality_embedding
+
+		Processing Workflow:
+		    1.  Generate position IDs based on sequence length.
+		    2.  Get token embeddings from `input_ids`.
+		    3.  Get position embeddings from `position_ids`.
+		    4.  Expand `modality_embedding` to match batch and sequence size.
+		    5.  Sum token, position, and modality embeddings.
+		    6.  Apply layer norm and dropout.
+		    7.  Generate attention mask if one is not provided.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    output = model(input_ids)
+		==============================================================================
 		"""
 		batch_size, seq_len = input_ids.shape
 		
@@ -111,5 +169,29 @@ class ExternalVoiceEncoder(nn.Module):
 		}
 	
 	def get_output_dim(self) -> int:
-		"""Get output embedding dimension."""
+		"""
+		==============================================================================
+		Function: get_output_dim
+		==============================================================================
+		Purpose:  Returns the size of the output embeddings produced by this encoder.
+
+		Parameters:
+		    - None
+
+		Returns:
+		    int - Embedding dimension size (e.g., 1536).
+
+		Dependencies:
+		    - None
+
+		Processing Workflow:
+		    1.  Return `self.embedding_dim`.
+
+		ToDo:
+		    - None
+
+		Usage:
+		    dim = model.get_output_dim()
+		==============================================================================
+		"""
 		return self.embedding_dim

@@ -15,17 +15,32 @@ from src.encoders.touch_encoder import TouchEncoder
 
 @pytest.fixture
 def batch_size():
-	"""Standard batch size to use across encoder tests."""
+	"""
+	Standard batch size to use across encoder tests.
+
+	Returns:
+		Batch size integer
+	"""
 	return 4
 
 @pytest.fixture
 def seq_len():
-	"""Standard sequence length to use across encoder tests."""
+	"""
+	Standard sequence length to use across encoder tests.
+
+	Returns:
+		Sequence length integer
+	"""
 	return 32
 
 @pytest.fixture
 def embedding_dim():
-	"""Standard embedding dimension to use across encoder tests."""
+	"""
+	Standard embedding dimension to use across encoder tests.
+
+	Returns:
+		Embedding dimension size
+	"""
 	return 1536
 
 def test_internal_voice_encoder(batch_size, seq_len, embedding_dim):
@@ -34,6 +49,11 @@ def test_internal_voice_encoder(batch_size, seq_len, embedding_dim):
 	
 	Verifies that the encoder properly processes a batch of token IDs and returns 
 	embeddings of the expected shape [batch, seq_len, embedding_dim].
+	
+	Args:
+		batch_size: Test batch size
+		seq_len: Test sequence length
+		embedding_dim: Test embedding dimension
 	"""
 	# Note: internal_voice_encoder argument is vocab_size, not vocabulary_size in some versions?
 	# Checking source invalidates this, but assuming consistent with codebase
@@ -51,6 +71,11 @@ def test_internal_voice_encoder(batch_size, seq_len, embedding_dim):
 def test_internal_voice_encoder_error_handling(batch_size, seq_len, embedding_dim):
 	"""
 	Bad Path: Test token ID out of vocabulary range.
+	
+	Args:
+		batch_size: Test batch size
+		seq_len: Test sequence length
+		embedding_dim: Test embedding dimension
 	"""
 	encoder = InternalVoiceEncoder(vocab_size=10, embedding_dim=embedding_dim)
 	# Token ID 10 is out of bounds (0-9)
@@ -65,6 +90,10 @@ def test_audio_encoder(batch_size, embedding_dim):
 	Verifies that the encoder processes raw audio waveforms and returns embeddings.
 	Checks that the downsampling logic results in the correct number of tokens 
 	(dependent on hop_length) and that vector quantization indices are returned.
+	
+	Args:
+		batch_size: Test batch size
+		embedding_dim: Test embedding dimension
 	"""
 	# Audio encoder downsamples, so output length depends on input
 	encoder = AudioEncoder(embedding_dim=embedding_dim)
@@ -87,6 +116,10 @@ def test_visual_encoder_basic(batch_size, embedding_dim):
 	Verifies encoding of stereo images using a ViT-based architecture.
 	Ensures that inputs are patched correctly (224 -> 14x14 patches) and 
 	that stereo inputs (left+right) result in double the sequence length.
+	
+	Args:
+		batch_size: Test batch size
+		embedding_dim: Test embedding dimension
 	"""
 	encoder = VisualEncoder(embedding_dim=embedding_dim, image_size=224, patch_size=16)
 	image = torch.randn(batch_size, 3, 224, 224)
@@ -102,6 +135,10 @@ def test_visual_encoder_basic(batch_size, embedding_dim):
 def test_visual_encoder_error_handling(batch_size, embedding_dim):
 	"""
 	Bad Path: Test invalid input shapes.
+	
+	Args:
+		batch_size: Test batch size
+		embedding_dim: Test embedding dimension
 	"""
 	encoder = VisualEncoder(embedding_dim=embedding_dim, image_size=224, patch_size=16)
 	
@@ -146,6 +183,10 @@ def test_proprioception_encoder_basic(batch_size, embedding_dim):
 	Verifies processing of body joint positions and rotations over a temporal window.
 	Ensures inputs [batch, time, joints, features] are reduced to embeddings 
 	[batch, time, embedding_dim].
+	
+	Args:
+		batch_size: Test batch size
+		embedding_dim: Test embedding dimension
 	"""
 	temporal_window = 10
 	num_joints = 24
@@ -166,6 +207,9 @@ def test_proprioception_encoder_padding_fix(batch_size):
 	"""
 	Regression Test: Ensure ProprioceptionEncoder handles missing zero-velocity padding correctly.
 	If use_velocity=True but previous_state is None, it should pad inputs with zeros to match dimensions.
+	
+	Args:
+		batch_size: Test batch size
 	"""
 	embedding_dim = 64
 	temporal_window = 5
@@ -195,6 +239,10 @@ def test_touch_encoder_basic(batch_size, embedding_dim):
 	Verifies processing of sparse contact points.
 	Ensures that multiple contact attributes (force, position, type) are encoded 
 	and aggregated into embeddings.
+	
+	Args:
+		batch_size: Test batch size
+		embedding_dim: Test embedding dimension
 	"""
 	num_contacts = 5
 	encoder = TouchEncoder(embedding_dim=embedding_dim, max_contacts=num_contacts)

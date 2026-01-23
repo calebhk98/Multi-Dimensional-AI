@@ -1,8 +1,14 @@
 
+"""
+Test script to reproduce the TransformerBackbone mask bug.
+"""
 import torch
 from src.models.transformer_backbone import TransformerBackbone
 
 def test_mask_bug():
+	"""
+	Test function to reproduce the 4D tensor mask error.
+	"""
 	print("Testing TransformerBackbone mask...")
 	try:
 		model = TransformerBackbone(
