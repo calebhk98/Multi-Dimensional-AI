@@ -88,53 +88,70 @@ def main():
 	# So "Baseline" here means: feed ONLY this modality, compute loss ONLY for this modality.
 	
 	# Create dataset (Synthetic)
-	print("Creating dataset...")
-	dataset = CreatureDataset(length=args.steps * 16, synthetic=True) # Ensure enough data
-	dataloader = DataLoader(
-		dataset, 
-		batch_size=8, # Training config might say 16, using small for local test
-		shuffle=True, 
-		collate_fn=collate_fn
-	)
-	
-	# Filter inputs/targets logic logic could go into a custom Collate 
-	# OR we just modify the Trainer/loss weights dynamically.
-	
-	# Let's adjust loss weights to ignore other modalities
-	loss_weights = {
-		"internal_text": 0.0,
-		"external_text": 0.0,
-		"audio": 0.0,
-		"animation": 0.0,
-	}
-	
-	if args.modality == "text":
-		loss_weights["internal_text"] = 1.0
-		loss_weights["external_text"] = 1.0 
-	elif args.modality == "audio":
-		loss_weights["audio"] = 1.0
-	elif args.modality == "proprioception":
-		loss_weights["animation"] = 1.0
-	elif args.modality == "vision":
-		# Vision has no direct decoder in current architecture (it informs other actions)
-		# To verify it trains, we can attach a dummy auxiliary loss or just verify forward pass.
-		# For this baseline, we'll just enable internal text loss driven by vision input
-		# to ensure gradients flow back to the visual encoder.
-		loss_weights["internal_text"] = 1.0
-	
-	# Inject loss weights into config/model
-	if config.model is None: config.model = {}
-	config.model["loss_weights"] = loss_weights
-	
-	# Ensure model config is updated
-	if hasattr(model, 'config'):
-		model.config["loss_weights"] = loss_weights
-	else:
-		print("Warning: Could not update model config with loss weights")
-	
-	print(f"Starting training for modality: {args.modality}")
-	trainer = Trainer(model, config.__dict__, dataloader)
-	trainer.train()
-	
+    # Create dataset (Synthetic)
+    print("Creating dataset...")
+    dataset = CreatureDataset(length=args.steps * 16, synthetic=True) # Ensure enough data
+    dataloader = DataLoader(
+        dataset, 
+        batch_size=8, # Training config might say 16, using small for local test
+        shuffle=True, 
+        collate_fn=collate_fn
+    )
+    
+    # Configure loss weights based on modality
+    loss_weights = _configure_loss_weights(args.modality)
+    
+    # Inject loss weights into config/model
+    if config.model is None: config.model = {}
+    config.model["loss_weights"] = loss_weights
+    
+    # Ensure model config is updated
+    if hasattr(model, 'config'):
+        model.config["loss_weights"] = loss_weights
+    else:
+        print("Warning: Could not update model config with loss weights")
+    
+    print(f"Starting training for modality: {args.modality}")
+    trainer = Trainer(model, config.__dict__, dataloader)
+    trainer.train()
+
+def _configure_loss_weights(modality):
+    """
+    ==============================================================================
+    Function: _configure_loss_weights
+    ==============================================================================
+    Purpose:  Sets up loss weights dictionary based on target modality.
+
+    Parameters:
+        - modality: str
+            The target modality ("text", "audio", "proprioception", "vision").
+
+    Returns:
+        Dict[str, float] - Loss weights dictionary.
+    ==============================================================================
+    """
+    loss_weights = {
+        "internal_text": 0.0,
+        "external_text": 0.0,
+        "audio": 0.0,
+        "animation": 0.0,
+    }
+    
+    if modality == "text":
+        loss_weights["internal_text"] = 1.0
+        loss_weights["external_text"] = 1.0 
+    elif modality == "audio":
+        loss_weights["audio"] = 1.0
+    elif modality == "proprioception":
+        loss_weights["animation"] = 1.0
+    elif modality == "vision":
+        # Vision has no direct decoder in current architecture (it informs other actions)
+        # To verify it trains, we can attach a dummy auxiliary loss or just verify forward pass.
+        # For this baseline, we'll just enable internal text loss driven by vision input
+        # to ensure gradients flow back to the visual encoder.
+        loss_weights["internal_text"] = 1.0
+        
+    return loss_weights
+
 if __name__ == "__main__":
-	main()
+    main()

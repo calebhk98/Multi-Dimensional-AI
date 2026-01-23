@@ -14,7 +14,20 @@ class TestConfigurationWorkflow:
     """Test configuration loading and modification workflow."""
 
     def test_load_modify_save_config_workflow(self, tmp_path):
-        """Test complete config workflow: load → modify → save → reload."""
+        """
+        Purpose:
+            Test complete config workflow: load → modify → save → reload.
+            
+        Workflow:
+            1. Create initial config file.
+            2. Load via Config.from_files.
+            3. Modify using config.set().
+            4. Save.
+            5. Reload and verify changes.
+            
+        ToDo:
+            - None
+        """
         # Step 1: Create initial config
         initial_config = {
             "model": {"hidden_dim": 768},
@@ -46,7 +59,18 @@ class TestConfigurationWorkflow:
         assert reloaded.get("model.num_layers") == 24
 
     def test_config_merge_workflow(self, tmp_path):
-        """Test merging multiple config files."""
+        """
+        Purpose:
+            Test merging multiple config files.
+            
+        Workflow:
+            1. Create separate model and training config files.
+            2. Load both via Config.from_files.
+            3. Verify both sections coexist.
+            
+        ToDo:
+            - None
+        """
         # Create separate configs
         model_config = {"transformer": {"hidden_dim": 1536}}
         training_config = {"optimizer": {"lr": 3e-4}}
@@ -75,7 +99,19 @@ class TestTrainingWorkflow:
     """Test complete training workflow."""
 
     def test_training_checkpoint_resume_workflow(self, tmp_path):
-        """Test training → checkpoint → resume workflow."""
+        """
+        Purpose:
+            Test training → checkpoint → resume workflow.
+            
+        Workflow:
+            1. Train model.
+            2. Save checkpoint.
+            3. Resume training from checkpoint.
+            4. Verify state restoration.
+            
+        ToDo:
+            - Implement test.
+        """
         # This would test:
         # 1. Initialize model and trainer
         # 2. Train for N steps
@@ -87,7 +123,18 @@ class TestTrainingWorkflow:
         pass
 
     def test_training_validation_workflow(self):
-        """Test training with periodic validation."""
+        """
+        Purpose:
+            Test training with periodic validation.
+            
+        Workflow:
+            1. Train loop.
+            2. Validation loop triggers.
+            3. Metrics logged.
+            
+        ToDo:
+            - Implement test.
+        """
         # This would test:
         # 1. Train for K steps
         # 2. Run validation
@@ -96,7 +143,18 @@ class TestTrainingWorkflow:
         pass
 
     def test_hyperparameter_tuning_workflow(self):
-        """Test hyperparameter search workflow."""
+        """
+        Purpose:
+            Test hyperparameter search workflow.
+            
+        Workflow:
+            1. Define param grid.
+            2. Run training for each config.
+            3. Compare results.
+            
+        ToDo:
+            - Implement test.
+        """
         # This would test trying different hyperparameters
         pass
 
@@ -106,7 +164,18 @@ class TestInferenceWorkflow:
     """Test inference workflow."""
 
     def test_load_model_and_infer_workflow(self):
-        """Test loading model and running inference."""
+        """
+        Purpose:
+            Test loading model and running inference.
+            
+        Workflow:
+            1. Load checkpoint.
+            2. Set eval mode.
+            3. Run forward pass.
+            
+        ToDo:
+            - Implement test.
+        """
         # This would test:
         # 1. Load checkpoint
         # 2. Set model to eval mode
@@ -115,11 +184,32 @@ class TestInferenceWorkflow:
         pass
 
     def test_batch_inference_workflow(self):
-        """Test batch inference on multiple inputs."""
+        """
+        Purpose:
+            Test batch inference on multiple inputs.
+            
+        Workflow:
+            1. Prepare large batch.
+            2. Infer.
+            3. Verify batch processing speed/correctness.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_streaming_inference_workflow(self):
-        """Test streaming inference for real-time use."""
+        """
+        Purpose:
+            Test streaming inference for real-time use.
+            
+        Workflow:
+            1. Feed input chunks.
+            2. Verify monotonic outputs.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
 
@@ -127,7 +217,18 @@ class TestEncoderDecoderIntegration:
     """Test encoder-decoder integration."""
 
     def test_encode_decode_cycle(self):
-        """Test encoding inputs and decoding outputs."""
+        """
+        Purpose:
+            Test encoding inputs and decoding outputs.
+            
+        Workflow:
+            1. Encode random tokens.
+            2. Decode embeddings.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
         from src.decoders.text_decoder import TextDecoder
 
@@ -147,7 +248,18 @@ class TestEncoderDecoderIntegration:
         assert decoded["tokens"].shape == (batch_size, seq_len)
 
     def test_multi_encoder_fusion(self):
-        """Test combining multiple encoder outputs."""
+        """
+        Purpose:
+            Test combining multiple encoder outputs.
+            
+        Workflow:
+            1. Encoder audio and text.
+            2. Fuse embeddings (concat).
+            3. Verify fused shape.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
         from src.encoders.audio_encoder import AudioEncoder
 
@@ -179,7 +291,18 @@ class TestDataFlowIntegration:
     """Test data flow through system."""
 
     def test_batch_creation_and_processing(self):
-        """Test creating and processing a batch."""
+        """
+        Purpose:
+            Test creating and processing a batch.
+            
+        Workflow:
+            1. Create nested batch dict.
+            2. Move to device.
+            3. Verify device placement.
+            
+        ToDo:
+            - None
+        """
         # Create dummy batch
         batch = {
             "inputs": {
@@ -203,7 +326,18 @@ class TestDataFlowIntegration:
         assert batch["inputs"]["internal_voice_tokens"].device.type == device
 
     def test_attention_mask_propagation(self):
-        """Test that attention masks flow correctly through pipeline."""
+        """
+        Purpose:
+            Test that attention masks flow correctly through pipeline.
+            
+        Workflow:
+            1. Create input with padding.
+            2. Run encoder.
+            3. Verify attention_mask in output.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)
@@ -223,7 +357,17 @@ class TestLossComputation:
     """Test loss computation workflows."""
 
     def test_single_decoder_loss(self):
-        """Test computing loss for single decoder."""
+        """
+        Purpose:
+            Test computing loss for single decoder.
+            
+        Workflow:
+            1. Run decoder.compute_loss.
+            2. Verify scalar output > 0.
+            
+        ToDo:
+            - None
+        """
         from src.decoders.text_decoder import TextDecoder
 
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
@@ -236,7 +380,19 @@ class TestLossComputation:
         assert loss > 0
 
     def test_multi_decoder_loss_combination(self):
-        """Test combining losses from multiple decoders."""
+        """
+        Purpose:
+            Test combining losses from multiple decoders.
+            
+        Workflow:
+            1. Compute text loss.
+            2. Compute audio loss.
+            3. Combine with weights.
+            4. Verify gradient requirement.
+            
+        ToDo:
+            - None
+        """
         from src.decoders.text_decoder import TextDecoder
         from src.decoders.audio_decoder import AudioDecoder
 
@@ -263,7 +419,17 @@ class TestLossComputation:
         assert total_loss.requires_grad
 
     def test_animation_loss_components(self):
-        """Test animation decoder's multi-component loss."""
+        """
+        Purpose:
+            Test animation decoder's multi-component loss.
+            
+        Workflow:
+            1. Run animation loss.
+            2. Verify sub-components (body, face, eye) in dict.
+            
+        ToDo:
+            - None
+        """
         from src.decoders.animation_decoder import AnimationDecoder
 
         decoder = AnimationDecoder(embedding_dim=512)
@@ -293,7 +459,19 @@ class TestGradientFlow:
     """Test gradient flow through components."""
 
     def test_encoder_gradient_flow(self):
-        """Test that gradients flow through encoder."""
+        """
+        Purpose:
+            Test that gradients flow through encoder.
+            
+        Workflow:
+            1. Forward pass.
+            2. Compute loss.
+            3. Backward pass.
+            4. Verify params have grad.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)
@@ -312,7 +490,19 @@ class TestGradientFlow:
                 assert param.grad is not None
 
     def test_decoder_gradient_flow(self):
-        """Test that gradients flow through decoder."""
+        """
+        Purpose:
+            Test that gradients flow through decoder.
+            
+        Workflow:
+            1. Forward pass.
+            2. Compute loss.
+            3. Backward pass.
+            4. Verify inputs and params have grad.
+            
+        ToDo:
+            - None
+        """
         from src.decoders.text_decoder import TextDecoder
 
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
@@ -329,7 +519,18 @@ class TestGradientFlow:
                 assert param.grad is not None
 
     def test_end_to_end_gradient_flow(self):
-        """Test gradient flow through encoder-decoder chain."""
+        """
+        Purpose:
+            Test gradient flow through encoder-decoder chain.
+            
+        Workflow:
+            1. Encode -> Decode -> Loss.
+            2. Backward.
+            3. Verify both modules have grads.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
         from src.decoders.text_decoder import TextDecoder
 
@@ -358,7 +559,18 @@ class TestMemoryEfficiency:
     """Test memory efficiency of operations."""
 
     def test_batch_size_scaling(self):
-        """Test that memory scales reasonably with batch size."""
+        """
+        Purpose:
+            Test that memory scales reasonably with batch size.
+            
+        Workflow:
+            1. Run small batch.
+            2. Run large batch.
+            3. Verify both succeed (implicit OOM check by running).
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)
@@ -376,7 +588,18 @@ class TestMemoryEfficiency:
         assert large_output["embeddings"].shape[0] == 16
 
     def test_sequence_length_scaling(self):
-        """Test that memory scales with sequence length."""
+        """
+        Purpose:
+            Test that memory scales with sequence length.
+            
+        Workflow:
+            1. Run short seq.
+            2. Run long seq.
+            3. Verify output shapes.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)
@@ -398,7 +621,18 @@ class TestErrorHandling:
     """Test error handling in workflows."""
 
     def test_invalid_input_shapes(self):
-        """Test handling of invalid input shapes."""
+        """
+        Purpose:
+            Test handling of invalid input shapes.
+            
+        Workflow:
+            1. Create encoder.
+            2. Pass input with missing dimension.
+            3. Verify error raised.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.visual_encoder import VisualEncoder
 
         encoder = VisualEncoder(
@@ -414,7 +648,18 @@ class TestErrorHandling:
             encoder(wrong_shape)
 
     def test_out_of_vocab_tokens(self):
-        """Test handling of out-of-vocabulary tokens."""
+        """
+        Purpose:
+            Test handling of out-of-vocabulary tokens.
+            
+        Workflow:
+            1. Create encoder.
+            2. Pass token > vocab_size.
+            3. Verify error raised.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)
@@ -425,7 +670,18 @@ class TestErrorHandling:
             encoder(invalid_tokens)
 
     def test_mismatched_dimensions(self):
-        """Test handling of dimension mismatches."""
+        """
+        Purpose:
+            Test handling of dimension mismatches.
+            
+        Workflow:
+            1. Create decoder.
+            2. Pass input with wrong embedding dim.
+            3. Verify error raised.
+            
+        ToDo:
+            - None
+        """
         from src.decoders.text_decoder import TextDecoder
 
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
@@ -441,7 +697,19 @@ class TestModelCheckpointing:
     """Test model checkpointing workflows."""
 
     def test_save_and_load_checkpoint(self, tmp_path):
-        """Test saving and loading model checkpoint."""
+        """
+        Purpose:
+            Test saving and loading model checkpoint.
+            
+        Workflow:
+            1. Train model.
+            2. Save.
+            3. Load.
+            4. Compare key params.
+            
+        ToDo:
+            - Implement test.
+        """
         # Would test:
         # 1. Create and train model
         # 2. Save checkpoint
@@ -451,7 +719,18 @@ class TestModelCheckpointing:
         pass
 
     def test_checkpoint_includes_metadata(self, tmp_path):
-        """Test that checkpoint includes necessary metadata."""
+        """
+        Purpose:
+            Test that checkpoint includes necessary metadata.
+            
+        Workflow:
+            1. Save checkpoint.
+            2. Load dict.
+            3. Verify keys (epoch, config, etc.).
+            
+        ToDo:
+            - Implement test.
+        """
         # Should include:
         # - Model state dict
         # - Optimizer state dict
@@ -461,7 +740,18 @@ class TestModelCheckpointing:
         pass
 
     def test_backwards_compatibility(self, tmp_path):
-        """Test loading checkpoints from older versions."""
+        """
+        Purpose:
+            Test loading checkpoints from older versions.
+            
+        Workflow:
+            1. Mock old checkpoint.
+            2. Load.
+            3. Verify success.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
 
@@ -469,7 +759,18 @@ class TestReproducibility:
     """Test reproducibility of results."""
 
     def test_same_seed_same_results(self):
-        """Test that same seed produces same results."""
+        """
+        Purpose:
+            Test that same seed produces same results.
+            
+        Workflow:
+            1. Set seed X -> Run 1 -> Output 1.
+            2. Set seed X -> Run 2 -> Output 2.
+            3. Assert Output 1 == Output 2.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         seed = 42
@@ -490,7 +791,18 @@ class TestReproducibility:
         assert torch.allclose(output1["embeddings"], output2["embeddings"], atol=1e-6)
 
     def test_deterministic_forward_pass(self):
-        """Test that forward pass is deterministic in eval mode."""
+        """
+        Purpose:
+            Test that forward pass is deterministic in eval mode.
+            
+        Workflow:
+            1. Set eval mode.
+            2. Run forward twice on same input.
+            3. Assert equal outputs.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)

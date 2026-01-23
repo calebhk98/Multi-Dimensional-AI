@@ -56,59 +56,112 @@ def check_file(filepath):
             return {"file_header": False, "functions": [], "error": "SyntaxError"}
 
     missing_header = ast.get_docstring(tree) is None
-    
     missing_functions = []
     
     for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            docstring = ast.get_docstring(node)
-            if docstring is None:
-                missing_functions.append({
-                    "name": node.name,
-                    "lineno": node.lineno,
-                    "reason": "Missing docstring"
-                })
-            else:
-                # content checks
-                issues = []
-                if len(docstring.split('\n')) < 3 and len(node.args.args) > 1: 
-                     # Allow one-liners for simple no-arg/single-arg funcs, but prefer detail
-                     # Actually user wants detailed parameters.
-                     pass 
-                
-                has_args = "Args:" in docstring or "Parameters:" in docstring
-                has_returns = "Returns:" in docstring or "Yields:" in docstring
-                
-                # Check if function has arguments but docstring doesn't mention them
-                # excluding 'self' and skipping test functions
-                if not node.name.startswith("test_"):
-                    args_count = len([a for a in node.args.args if a.arg != 'self'])
-                    if args_count > 0 and not has_args:
-                        issues.append("Missing 'Args:' section")
-                    
-                    # Check for return value (loose check, looking for return stmt)
-                    has_return_stmt = False
-                    for child in ast.walk(node):
-                        if isinstance(child, (ast.Return, ast.Yield)):
-                             if isinstance(child, ast.Return) and child.value is None:
-                                 continue # ignore empty returns
-                             has_return_stmt = True
-                             break
-                    
-                    if has_return_stmt and not has_returns:
-                        issues.append("Missing 'Returns:' section")
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
 
-                if issues:
-                    missing_functions.append({
-                        "name": node.name,
-                        "lineno": node.lineno,
-                        "reason": ", ".join(issues)
-                    })
+        docstring = ast.get_docstring(node)
+        if docstring is None:
+            missing_functions.append({
+                "name": node.name,
+                "lineno": node.lineno,
+                "reason": "Missing docstring"
+            })
+            continue
+
+        # Content checks
+        issues = _validate_docstring_content(node, docstring)
+        if issues:
+            missing_functions.append({
+                "name": node.name,
+                "lineno": node.lineno,
+                "reason": ", ".join(issues)
+            })
 
     return {
         "file_header": missing_header,
         "functions": missing_functions
     }
+
+def _validate_docstring_content(node, docstring):
+    """
+    ==============================================================================
+    Function: _validate_docstring_content
+    ==============================================================================
+    Purpose:  Validates docstring content based on function type.
+              - Test functions: Must have 'Purpose', 'Workflow', 'ToDo'.
+              - Regular functions: Must have 'Args' (if params exist) and 'Returns' (if returns).
+
+    Parameters:
+        - node: ast.FunctionDef
+            The function node being checked.
+        - docstring: str
+            The docstring of the function.
+
+    Returns:
+        List[str] - List of issue descriptions found suitable for reporting.
+    ==============================================================================
+    """
+    issues = []
+    
+    # Check if it's a test function
+    is_test = node.name.startswith("test_")
+
+    if is_test:
+        # Enforce Test Documentation Standard
+        if "Purpose:" not in docstring and "Purpose" not in docstring:
+             issues.append("Missing 'Purpose' section")
+        if "Workflow:" not in docstring and "Workflow" not in docstring:
+             issues.append("Missing 'Workflow' section")
+        if "ToDo:" not in docstring and "ToDo" not in docstring:
+             issues.append("Missing 'ToDo' section")
+    else:
+        # Enforce Standard Documentation Standard for regular AND internal functions
+        
+        # Allow one-liners for simple no-arg/single-arg funcs? User said "anything we make should have the comments".
+        # Sticking to the previous logic for Args/Returns, but removing the skip for `_`
+        
+        has_args = "Args:" in docstring or "Parameters:" in docstring
+        has_returns = "Returns:" in docstring or "Yields:" in docstring
+        
+        # Check Args (exclude self/cls)
+        args_count = len([a for a in node.args.args if a.arg not in ('self', 'cls')])
+        if args_count > 0 and not has_args:
+            issues.append("Missing 'Args:' section")
+        
+        # Check Returns
+        if _has_return_statement(node) and not has_returns:
+            issues.append("Missing 'Returns:' section")
+
+    return issues
+
+def _has_return_statement(node):
+    """
+    ==============================================================================
+    Function: _has_return_statement
+    ==============================================================================
+    Purpose:  Checks if a function node contains a non-empty return or yield
+              statement. Traverses the function body recursively.
+
+    Parameters:
+        - node: ast.FunctionDef
+            The function node to inspect.
+
+    Returns:
+        bool - True if a return/yield statement is found, False otherwise.
+    ==============================================================================
+    """
+    for child in ast.walk(node):
+        if not isinstance(child, (ast.Return, ast.Yield)):
+            continue
+            
+        if isinstance(child, ast.Return) and child.value is None:
+             continue # ignore empty returns
+        return True
+        
+    return False
 
 def main():
     """
@@ -153,24 +206,42 @@ def main():
     
     # 1. Walk directories
     for start_dir in walk_dirs:
-        if not os.path.exists(start_dir):
-            continue
-        for root, dirs, files in os.walk(start_dir):
-            for file in files:
-                if file.endswith(".py"):
-                    path = os.path.join(root, file)
-                    result = check_file(path)
-                    if result["file_header"] or result["functions"]:
-                        report[path] = result
+        _scan_directory(start_dir, report)
 
     # 2. Check root files
     for file in os.listdir("."):
-        if os.path.isfile(file) and file.endswith(".py"):
-            result = check_file(file)
-            if result["file_header"] or result["functions"]:
-                report[file] = result
+        if not os.path.isfile(file) or not file.endswith(".py"):
+            continue
+            
+        result = check_file(file)
+        if result["file_header"] or result["functions"]:
+            report[file] = result
 
     print(json.dumps(report, indent=2))
+
+def _scan_directory(start_dir, report):
+    """
+    Helper to scan a directory recursively for python files.
+    
+    Args:
+        start_dir: Directory to start scanning from.
+        report: Dictionary to collect results.
+        
+    Returns:
+        None
+    """
+    if not os.path.exists(start_dir):
+        return
+        
+    for root, dirs, files in os.walk(start_dir):
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+                
+            path = os.path.join(root, file)
+            result = check_file(path)
+            if result["file_header"] or result["functions"]:
+                report[path] = result
 
 if __name__ == "__main__":
     main()

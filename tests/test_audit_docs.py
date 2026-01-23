@@ -28,12 +28,20 @@ def test_codebase_documentation():
     ==============================================================================
     Test: test_codebase_documentation
     ==============================================================================
-    Purpose:  Scans 'src', 'scripts', and 'tests' directories for Python files
-              and verifies they have proper file headers and function docstrings
-              using the logic from scripts/audit_docs.py.
+    Purpose:  
+        Scans 'src', 'scripts', and 'tests' directories for Python files
+        and verifies they have proper file headers and function docstrings
+        using the logic from scripts/audit_docs.py.
 
-    Assertions:
-        - The report dictionary must be empty (no missing documentation).
+    Workflow:
+        1. Define directories to scan.
+        2. Scan directories recursively.
+        3. Scan root files.
+        4. Accumulate failures in report.
+        5. Assert report is empty.
+
+    ToDo:
+        - None
     ==============================================================================
     """
     report = {}
@@ -42,30 +50,66 @@ def test_codebase_documentation():
     # 1. Check directories
     for start_dir_name in walk_dirs:
         start_dir = os.path.join(PROJECT_ROOT, start_dir_name)
-        if not os.path.exists(start_dir):
-            continue
-            
-        for root, dirs, files in os.walk(start_dir):
-            for file in files:
-                if file.endswith(".py"):
-                    path = os.path.join(root, file)
-                    # We pass the absolute path to check_file
-                    result = check_file(path)
-                    
-                    if result["file_header"] or result["functions"]:
-                        # Convert to relative path for readability in report
-                        rel_path = os.path.relpath(path, PROJECT_ROOT)
-                        report[rel_path] = result
+        _scan_directory_for_docs(start_dir, report)
 
     # 2. Check root files
-    for file in os.listdir(PROJECT_ROOT):
-        path = os.path.join(PROJECT_ROOT, file)
-        if os.path.isfile(path) and file.endswith(".py"):
-            result = check_file(path)
-            if result["file_header"] or result["functions"]:
-                report[file] = result
+    _scan_root_files_for_docs(PROJECT_ROOT, report)
 
     # If report is not empty, fail the test with detailed output
     if report:
         error_msg = json.dumps(report, indent=2)
         pytest.fail(f"Documentation missing in the following files:\n{error_msg}")
+
+def _scan_directory_for_docs(start_dir, report):
+    """
+    Helper to scan directory for docs.
+    
+    Args:
+        start_dir: Directory to scan.
+        report: Dict to collect results.
+        
+    Returns:
+        None
+    """
+    if not os.path.exists(start_dir):
+        return
+        
+    for root, dirs, files in os.walk(start_dir):
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+
+            path = os.path.join(root, file)
+            _check_and_report(path, report)
+
+def _scan_root_files_for_docs(root_dir, report):
+    """
+    Helper to scan root files for docs.
+    
+    Args:
+        root_dir: Root directory to scan.
+        report: Dict to collect results.
+        
+    Returns:
+        None
+    """
+    for file in os.listdir(root_dir):
+        path = os.path.join(root_dir, file)
+        if os.path.isfile(path) and file.endswith(".py"):
+            _check_and_report(path, report)
+
+def _check_and_report(path, report):
+    """
+    Checks a single file and adds to report if issues found.
+    
+    Args:
+        path: Path to file.
+        report: Dict to collect results.
+        
+    Returns:
+        None
+    """
+    result = check_file(path)
+    if result["file_header"] or result["functions"]:
+        rel_path = os.path.relpath(path, PROJECT_ROOT)
+        report[rel_path] = result

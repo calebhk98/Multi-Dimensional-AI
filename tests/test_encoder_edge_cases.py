@@ -15,7 +15,17 @@ class TestVisualEncoderEdgeCases:
     """Edge cases for VisualEncoder."""
 
     def test_get_output_dim(self):
-        """Test get_output_dim returns correct dimension."""
+        """
+        Purpose:
+            Test get_output_dim returns correct dimension.
+            
+        Workflow:
+            1. Create encoder.
+            2. Verify output dim matches embedding dim.
+            
+        ToDo:
+            - None
+        """
         encoder = VisualEncoder(embedding_dim=768)
         assert encoder.get_output_dim() == 768
 
@@ -23,7 +33,18 @@ class TestVisualEncoderEdgeCases:
         assert encoder.get_output_dim() == 1536
 
     def test_mono_vision_only_left(self):
-        """Test with only left image (no right image provided)."""
+        """
+        Purpose:
+            Test with only left image (no right image provided).
+            
+        Workflow:
+            1. Create encoder with use_stereo=True.
+            2. Pass left image only.
+            3. Verify output shape matches mono.
+            
+        ToDo:
+            - None
+        """
         encoder = VisualEncoder(
             image_size=224,
             patch_size=16,
@@ -44,7 +65,18 @@ class TestVisualEncoderEdgeCases:
         assert output["attention_mask"].shape == (batch_size, num_patches)
 
     def test_use_stereo_false(self):
-        """Test with use_stereo=False configuration."""
+        """
+        Purpose:
+            Test with use_stereo=False configuration.
+            
+        Workflow:
+            1. Create encoder with use_stereo=False.
+            2. Pass stereo images.
+            3. Verify right image is ignored.
+            
+        ToDo:
+            - None
+        """
         encoder = VisualEncoder(
             image_size=224,
             patch_size=16,
@@ -64,7 +96,18 @@ class TestVisualEncoderEdgeCases:
         assert output["embeddings"].shape == (batch_size, num_patches, 768)
 
     def test_small_embedding_dim_adjusts_num_heads(self):
-        """Test that num_heads is adjusted when embedding_dim is small."""
+        """
+        Purpose:
+            Test that num_heads is adjusted when embedding_dim is small.
+            
+        Workflow:
+            1. Create encoder with small embedding dim.
+            2. Run forward.
+            3. Verify no crash.
+            
+        ToDo:
+            - None
+        """
         # embedding_dim=32 is not divisible by num_heads=12
         encoder = VisualEncoder(
             image_size=32,
@@ -82,7 +125,18 @@ class TestVisualEncoderEdgeCases:
         assert output["embeddings"].shape[2] == 32
 
     def test_various_image_sizes(self):
-        """Test with various image sizes."""
+        """
+        Purpose:
+            Test with various image sizes.
+            
+        Workflow:
+            1. Iterate sizes.
+            2. Run forward.
+            3. Verify output patches count.
+            
+        ToDo:
+            - None
+        """
         for image_size in [64, 128, 224, 256]:
             encoder = VisualEncoder(
                 image_size=image_size,
@@ -98,7 +152,18 @@ class TestVisualEncoderEdgeCases:
             assert output["embeddings"].shape[1] == expected_patches
 
     def test_various_patch_sizes(self):
-        """Test with various patch sizes."""
+        """
+        Purpose:
+            Test with various patch sizes.
+            
+        Workflow:
+            1. Iterate patch sizes.
+            2. Run forward.
+            3. Verify output patches count.
+            
+        ToDo:
+            - None
+        """
         image_size = 224
         for patch_size in [8, 14, 16, 32]:
             encoder = VisualEncoder(
@@ -115,7 +180,18 @@ class TestVisualEncoderEdgeCases:
             assert output["embeddings"].shape[1] == expected_patches
 
     def test_grayscale_images(self):
-        """Test with grayscale images (1 channel)."""
+        """
+        Purpose:
+            Test with grayscale images (1 channel).
+            
+        Workflow:
+            1. Create encoder with in_channels=1.
+            2. Run forward with grayscale input.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         encoder = VisualEncoder(
             image_size=224,
             patch_size=16,
@@ -131,7 +207,18 @@ class TestVisualEncoderEdgeCases:
         assert output["embeddings"].shape == (2, num_patches, 768)
 
     def test_stereo_concatenation(self):
-        """Test that stereo concatenates both eyes correctly."""
+        """
+        Purpose:
+            Test that stereo concatenates both eyes correctly.
+            
+        Workflow:
+            1. Create stereo encoder.
+            2. Run forward with both images.
+            3. Verify output patches = 2 * mono.
+            
+        ToDo:
+            - None
+        """
         encoder = VisualEncoder(
             image_size=224,
             patch_size=16,
@@ -154,7 +241,17 @@ class TestAudioEncoderEdgeCases:
     """Edge cases for AudioEncoder."""
 
     def test_get_output_dim(self):
-        """Test get_output_dim returns correct dimension."""
+        """
+        Purpose:
+            Test get_output_dim returns correct dimension.
+            
+        Workflow:
+            1. Create encoder.
+            2. Verify output dim matches embedding dim.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=768)
         assert encoder.get_output_dim() == 768
 
@@ -162,7 +259,18 @@ class TestAudioEncoderEdgeCases:
         assert encoder.get_output_dim() == 1536
 
     def test_various_hop_lengths(self):
-        """Test with various hop_length configurations."""
+        """
+        Purpose:
+            Test with various hop_length configurations.
+            
+        Workflow:
+            1. Iterate hop lengths.
+            2. Run forward.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         for hop_length in [160, 320, 640]:
             encoder = AudioEncoder(
                 sample_rate=16000,
@@ -177,7 +285,18 @@ class TestAudioEncoderEdgeCases:
             assert output["attention_mask"].shape[0] == 2
 
     def test_various_sample_rates(self):
-        """Test with different sample rates."""
+        """
+        Purpose:
+            Test with different sample rates.
+            
+        Workflow:
+            1. Iterate sample rates.
+            2. Run forward.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         for sample_rate in [8000, 16000, 24000]:
             encoder = AudioEncoder(
                 sample_rate=sample_rate,
@@ -191,7 +310,18 @@ class TestAudioEncoderEdgeCases:
             assert output["embeddings"].shape[0] == 2
 
     def test_short_audio_clip(self):
-        """Test with very short audio clip."""
+        """
+        Purpose:
+            Test with very short audio clip.
+            
+        Workflow:
+            1. Create short waveform.
+            2. Run forward.
+            3. Verify output has frames.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=512)
 
         # Very short clip (0.1 seconds)
@@ -202,7 +332,18 @@ class TestAudioEncoderEdgeCases:
         assert output["embeddings"].shape[1] > 0  # Should have some frames
 
     def test_long_audio_clip(self):
-        """Test with long audio clip."""
+        """
+        Purpose:
+            Test with long audio clip.
+            
+        Workflow:
+            1. Create long waveform.
+            2. Run forward.
+            3. Verify output limit (if any) or shape.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=512)
 
         # Long clip (10 seconds)
@@ -214,7 +355,18 @@ class TestAudioEncoderEdgeCases:
         assert output["embeddings"].shape[1] < 1000
 
     def test_silent_audio(self):
-        """Test with silent audio (all zeros)."""
+        """
+        Purpose:
+            Test with silent audio (all zeros).
+            
+        Workflow:
+            1. Create zero waveform.
+            2. Run forward.
+            3. Verify no NaNs.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=512)
 
         # Silent audio
@@ -225,7 +377,17 @@ class TestAudioEncoderEdgeCases:
         assert not torch.isnan(output["embeddings"]).any()
 
     def test_return_indices_true(self):
-        """Test with return_indices=True."""
+        """
+        Purpose:
+            Test with return_indices=True.
+            
+        Workflow:
+            1. Run forward with return_indices=True.
+            2. Verify indices present and valid.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=512, codebook_size=1024)
 
         waveform = torch.randn(2, 16000)
@@ -238,7 +400,17 @@ class TestAudioEncoderEdgeCases:
         assert (output["indices"] < 1024).all()
 
     def test_return_indices_false(self):
-        """Test with return_indices=False."""
+        """
+        Purpose:
+            Test with return_indices=False.
+            
+        Workflow:
+            1. Run forward with return_indices=False.
+            2. Verify indices absent.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=512)
 
         waveform = torch.randn(2, 16000)
@@ -247,7 +419,18 @@ class TestAudioEncoderEdgeCases:
         assert "indices" not in output
 
     def test_quantize_method(self):
-        """Test the quantize method directly."""
+        """
+        Purpose:
+            Test the quantize method directly.
+            
+        Workflow:
+            1. Create features.
+            2. Quantize.
+            3. Verify shapes and values.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=128, codebook_size=256)
 
         features = torch.randn(2, 50, 128)
@@ -259,7 +442,18 @@ class TestAudioEncoderEdgeCases:
         assert (indices < 256).all()
 
     def test_mono_and_stereo_input(self):
-        """Test that encoder handles both 2D and 3D input tensors."""
+        """
+        Purpose:
+            Test that encoder handles both 2D and 3D input tensors.
+            
+        Workflow:
+            1. Pass 2D waveform.
+            2. Pass 3D waveform (1 channel).
+            3. Verify equivalence.
+            
+        ToDo:
+            - None
+        """
         encoder = AudioEncoder(embedding_dim=512)
 
         # 2D input [batch, samples]
@@ -274,7 +468,18 @@ class TestAudioEncoderEdgeCases:
         assert output_2d["embeddings"].shape == output_3d["embeddings"].shape
 
     def test_various_codebook_sizes(self):
-        """Test with different codebook sizes."""
+        """
+        Purpose:
+            Test with different codebook sizes.
+            
+        Workflow:
+            1. Iterate sizes.
+            2. Run forward.
+            3. Verify indices range.
+            
+        ToDo:
+            - None
+        """
         for codebook_size in [256, 512, 1024, 2048]:
             encoder = AudioEncoder(
                 embedding_dim=512,
@@ -291,12 +496,33 @@ class TestProprioceptionEncoderEdgeCases:
     """Edge cases for ProprioceptionEncoder."""
 
     def test_get_output_dim(self):
-        """Test get_output_dim returns correct dimension."""
+        """
+        Purpose:
+            Test get_output_dim returns correct dimension.
+            
+        Workflow:
+            1. Create encoder.
+            2. Verify output dim matches embedding dim.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(embedding_dim=768)
         assert encoder.get_output_dim() == 768
 
     def test_without_velocity_no_previous_state(self):
-        """Test with use_velocity=True but no previous state provided."""
+        """
+        Purpose:
+            Test with use_velocity=True but no previous state provided.
+            
+        Workflow:
+            1. Create encoder with velocity.
+            2. Pass inputs without previous state.
+            3. Verify padding/handling.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(
             num_joints=24,
             embedding_dim=512,
@@ -315,7 +541,18 @@ class TestProprioceptionEncoderEdgeCases:
         assert not torch.isnan(output["embeddings"]).any()
 
     def test_with_velocity_and_previous_state(self):
-        """Test with velocity computation using previous state."""
+        """
+        Purpose:
+            Test with velocity computation using previous state.
+            
+        Workflow:
+            1. Create encoder with velocity.
+            2. Pass inputs AND previous state.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(
             num_joints=24,
             embedding_dim=512,
@@ -342,7 +579,18 @@ class TestProprioceptionEncoderEdgeCases:
         assert output["embeddings"].shape == (batch_size, temporal_len, 512)
 
     def test_without_velocity(self):
-        """Test with use_velocity=False."""
+        """
+        Purpose:
+            Test with use_velocity=False.
+            
+        Workflow:
+            1. Create encoder without velocity.
+            2. Pass inputs.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(
             num_joints=24,
             embedding_dim=512,
@@ -359,7 +607,18 @@ class TestProprioceptionEncoderEdgeCases:
         assert output["embeddings"].shape == (batch_size, 10, 512)
 
     def test_compute_velocity_method(self):
-        """Test compute_velocity method directly."""
+        """
+        Purpose:
+            Test compute_velocity method directly.
+            
+        Workflow:
+            1. Create encoder.
+            2. Compute velocity manually.
+            3. Verify matches formula.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(embedding_dim=512)
 
         current = torch.tensor([[1.0, 2.0, 3.0]])
@@ -372,7 +631,18 @@ class TestProprioceptionEncoderEdgeCases:
         assert torch.allclose(velocity, expected)
 
     def test_various_num_joints(self):
-        """Test with different number of joints."""
+        """
+        Purpose:
+            Test with different number of joints.
+            
+        Workflow:
+            1. Iterate num_joints.
+            2. Create encoder.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         for num_joints in [10, 24, 32, 52]:
             encoder = ProprioceptionEncoder(
                 num_joints=num_joints,
@@ -387,7 +657,18 @@ class TestProprioceptionEncoderEdgeCases:
             assert output["embeddings"].shape == (2, 5, 512)
 
     def test_various_temporal_windows(self):
-        """Test with different temporal window sizes."""
+        """
+        Purpose:
+            Test with different temporal window sizes.
+            
+        Workflow:
+            1. Iterate windows.
+            2. Create encoder.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         for temporal_window in [1, 5, 10, 20]:
             encoder = ProprioceptionEncoder(
                 num_joints=24,
@@ -402,7 +683,18 @@ class TestProprioceptionEncoderEdgeCases:
             assert output["embeddings"].shape == (2, temporal_window, 512)
 
     def test_single_frame_temporal_window(self):
-        """Test with temporal_window=1 (no temporal context)."""
+        """
+        Purpose:
+            Test with temporal_window=1 (no temporal context).
+            
+        Workflow:
+            1. Create encoder with window=1.
+            2. Pass 1-frame input.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(
             num_joints=24,
             embedding_dim=512,
@@ -416,7 +708,18 @@ class TestProprioceptionEncoderEdgeCases:
         assert output["embeddings"].shape == (2, 1, 512)
 
     def test_all_joints_same_position(self):
-        """Test edge case where all joints are at the same position."""
+        """
+        Purpose:
+            Test edge case where all joints are at the same position.
+            
+        Workflow:
+            1. Create encoder.
+            2. Pass degenerate input (all zeros).
+            3. Verify no NaNs.
+            
+        ToDo:
+            - None
+        """
         encoder = ProprioceptionEncoder(
             num_joints=24,
             embedding_dim=512,
@@ -436,13 +739,34 @@ class TestTouchEncoderEdgeCases:
     """Edge cases for TouchEncoder."""
 
     def test_get_output_dim(self):
-        """Test get_output_dim returns correct dimension."""
+        """
+        Purpose:
+            Test get_output_dim returns correct dimension.
+            
+        Workflow:
+            1. Create encoder.
+            2. Verify output dim.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.touch_encoder import TouchEncoder
         encoder = TouchEncoder(embedding_dim=768)
         assert encoder.get_output_dim() == 768
 
     def test_all_contacts_inactive(self):
-        """Test with all contact points inactive."""
+        """
+        Purpose:
+            Test with all contact points inactive.
+            
+        Workflow:
+            1. Create encoder.
+            2. Pass inputs with all inactive contacts.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.touch_encoder import TouchEncoder
         encoder = TouchEncoder(
             max_contacts=10,
@@ -461,7 +785,18 @@ class TestTouchEncoderEdgeCases:
         assert output["embeddings"].shape == (batch_size, 10, 512)
 
     def test_single_contact_active(self):
-        """Test with only one contact point active."""
+        """
+        Purpose:
+            Test with only one contact point active.
+            
+        Workflow:
+            1. Create encoder.
+            2. Activate one contact.
+            3. Verify attention mask reflects activity.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.touch_encoder import TouchEncoder
         encoder = TouchEncoder(
             max_contacts=10,
@@ -485,7 +820,18 @@ class TestTouchEncoderEdgeCases:
         assert output["attention_mask"][:, 0].all()
 
     def test_various_max_contacts(self):
-        """Test with different max_contacts values."""
+        """
+        Purpose:
+            Test with different max_contacts values.
+            
+        Workflow:
+            1. Iterate max_contacts.
+            2. Create encoder.
+            3. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.touch_encoder import TouchEncoder
         for max_contacts in [5, 10, 20, 50]:
             encoder = TouchEncoder(
@@ -504,7 +850,18 @@ class TestTouchEncoderEdgeCases:
             assert output["embeddings"].shape == (2, max_contacts, 512)
 
     def test_zero_forces(self):
-        """Test with zero force vectors."""
+        """
+        Purpose:
+            Test with zero force vectors.
+            
+        Workflow:
+            1. Create inputs with zero force.
+            2. Run forward.
+            3. Verify no NaNs.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.touch_encoder import TouchEncoder
         encoder = TouchEncoder(
             max_contacts=10,
@@ -523,7 +880,18 @@ class TestTouchEncoderEdgeCases:
         assert not torch.isnan(output["embeddings"]).any()
 
     def test_normalized_normals(self):
-        """Test that normals are normalized correctly."""
+        """
+        Purpose:
+            Test that normals are normalized correctly.
+            
+        Workflow:
+            1. Create inputs with unnormalized normals.
+            2. Run forward.
+            3. Verify no NaNs (normalization handled).
+            
+        ToDo:
+            - None
+        """
         from src.encoders.touch_encoder import TouchEncoder
         encoder = TouchEncoder(
             max_contacts=10,
@@ -550,7 +918,17 @@ class TestEncoderOutputConsistency:
     """Test consistency across encoders."""
 
     def test_all_encoders_have_get_output_dim(self):
-        """Verify all encoders implement get_output_dim method."""
+        """
+        Purpose:
+            Verify all encoders implement get_output_dim method.
+            
+        Workflow:
+            1. List encoders.
+            2. Check hasattr 'get_output_dim'.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
         from src.encoders.external_voice_encoder import ExternalVoiceEncoder
 
@@ -568,7 +946,18 @@ class TestEncoderOutputConsistency:
             assert encoder.get_output_dim() == 512
 
     def test_all_encoders_return_attention_mask(self):
-        """Verify all encoders return attention masks."""
+        """
+        Purpose:
+            Verify all encoders return attention masks.
+            
+        Workflow:
+            1. List encoders.
+            2. Run forward.
+            3. Verify 'attention_mask' in output.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
         from src.encoders.external_voice_encoder import ExternalVoiceEncoder
 
@@ -609,7 +998,18 @@ class TestEncoderOutputConsistency:
         assert "attention_mask" in output6
 
     def test_attention_mask_dtype_and_values(self):
-        """Test that attention masks have correct dtype and values."""
+        """
+        Purpose:
+            Test that attention masks have correct dtype and values.
+            
+        Workflow:
+            1. Run encoder.
+            2. Check mask dtype is long.
+            3. Check mask valus are 0/1.
+            
+        ToDo:
+            - None
+        """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)

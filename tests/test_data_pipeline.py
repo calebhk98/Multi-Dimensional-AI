@@ -13,7 +13,18 @@ class TestSyntheticDataGenerator:
     """Tests for synthetic data generation."""
 
     def test_generate_multi_modal_batch(self):
-        """Test generating a complete multi-modal batch."""
+        """
+        Purpose:
+            Test generating a complete multi-modal batch.
+            
+        Workflow:
+            1. Initialize generator.
+            2. Generate batch.
+            3. Verify keys and shapes.
+            
+        ToDo:
+            - Implement test.
+        """
         # When implemented:
         # from src.data.synthetic_generator import SyntheticDataGenerator
         # generator = SyntheticDataGenerator()
@@ -25,43 +36,116 @@ class TestSyntheticDataGenerator:
         pass
 
     def test_generate_voice_tokens(self):
-        """Test generating voice token sequences."""
+        """
+        Purpose:
+            Test generating voice token sequences.
+            
+        Workflow:
+            1. Generate tokens.
+            2. Verify range and shape.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should generate valid token sequences
         # Tokens should be in valid vocab range
         pass
 
     def test_generate_audio_waveform(self):
-        """Test generating audio waveforms."""
+        """
+        Purpose:
+            Test generating audio waveforms.
+            
+        Workflow:
+            1. Generate audio.
+            2. Verify shape and amplitude range.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should generate proper waveform shape
         # Should be in valid range [-1, 1] typically
         pass
 
     def test_generate_images(self):
-        """Test generating stereo image pairs."""
+        """
+        Purpose:
+            Test generating stereo image pairs.
+            
+        Workflow:
+            1. Generate images.
+            2. Verify left/right existence and shape.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should generate left and right images
         # Should have correct dimensions [B, 3, H, W]
         pass
 
     def test_generate_proprioception(self):
-        """Test generating body pose data."""
+        """
+        Purpose:
+            Test generating body pose data.
+            
+        Workflow:
+            1. Generate proprioception data.
+            2. Verify joints and quaternions.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should generate valid joint positions and rotations
         # Rotations should be quaternions (normalized)
         pass
 
     def test_generate_touch_data(self):
-        """Test generating touch contact data."""
+        """
+        Purpose:
+            Test generating touch contact data.
+            
+        Workflow:
+            1. Generate touch data.
+            2. Verify fields (positions, forces, normals).
+            
+        ToDo:
+            - Implement test.
+        """
         # Should generate positions, normals, forces
         # Should mark active/inactive contacts
         pass
 
     def test_data_shapes_consistent(self):
-        """Test that generated data has consistent shapes across modalities."""
+        """
+        Purpose:
+            Test that generated data has consistent shapes across modalities.
+            
+        Workflow:
+            1. Generate batch.
+            2. assert batch sizes match.
+            
+        ToDo:
+            - Implement test.
+        """
         # Batch sizes should match
         # Sequence lengths should be compatible
         pass
 
     def test_generate_with_seed(self):
-        """Test that seed produces reproducible data."""
+        """
+        Purpose:
+            Test that seed produces reproducible data.
+            
+        Workflow:
+            1. Set seed.
+            2. Generate data.
+            3. Reset seed to same value.
+            4. Generate data again.
+            5. Assert equality.
+            
+        ToDo:
+            - Implement test.
+        """
         # Same seed should produce identical data
         pass
 
@@ -71,23 +155,65 @@ class TestDataCollator:
     """Tests for data collation with variable lengths."""
 
     def test_collate_variable_length_sequences(self):
-        """Test collating sequences with different lengths."""
+        """
+        Purpose:
+            Test collating sequences with different lengths.
+            
+        Workflow:
+            1. Create sample definitions with different lengths.
+            2. Collate them.
+            3. Verify padding and masks.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should pad shorter sequences
         # Should create attention masks
         pass
 
     def test_collate_nested_structures(self):
-        """Test collating nested data structures (touch, animation)."""
+        """
+        Purpose:
+            Test collating nested data structures (touch, animation).
+            
+        Workflow:
+            1. Create nested dict samples.
+            2. Collate.
+            3. Verify structure preserved and batched.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should handle nested dicts properly
         pass
 
     def test_padding_strategy(self):
-        """Test different padding strategies."""
+        """
+        Purpose:
+            Test different padding strategies.
+            
+        Workflow:
+            1. Test left vs right padding.
+            2. Verify output alignment.
+            
+        ToDo:
+            - Implement test.
+        """
         # Test left padding vs right padding
         pass
 
     def test_attention_mask_creation(self):
-        """Test that attention masks are created correctly."""
+        """
+        Purpose:
+            Test that attention masks are created correctly.
+            
+        Workflow:
+            1. Create batch with padding.
+            2. Check mask values (1 for real, 0 for pad).
+            
+        ToDo:
+            - Implement test.
+        """
         # Masks should indicate valid positions
         pass
 
@@ -97,23 +223,64 @@ class TestMultiModalDataset:
     """Tests for PyTorch Dataset implementation."""
 
     def test_dataset_length(self):
-        """Test __len__ method."""
+        """
+        Purpose:
+            Test __len__ method.
+            
+        Workflow:
+            1. Initialize dataset with N samples.
+            2. assert len(dataset) == N.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should return correct number of samples
         pass
 
     def test_dataset_getitem(self):
-        """Test __getitem__ method."""
+        """
+        Purpose:
+            Test __getitem__ method.
+            
+        Workflow:
+            1. Get item at index.
+            2. Verify structure (inputs/targets).
+            
+        ToDo:
+            - Implement test.
+        """
         # Should return dict with inputs and targets
         pass
 
     def test_dataset_iteration(self):
-        """Test iterating through dataset."""
+        """
+        Purpose:
+            Test iterating through dataset.
+            
+        Workflow:
+            1. Loop over dataset.
+            2. Verify count matches length.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should be iterable
         # Should return correct number of items
         pass
 
     def test_dataset_with_transforms(self):
-        """Test dataset with data augmentation transforms."""
+        """
+        Purpose:
+            Test dataset with data augmentation transforms.
+            
+        Workflow:
+            1. Initialize dataset with transform.
+            2. Get item.
+            3. Verify transform applied (or check shape).
+            
+        ToDo:
+            - Implement test.
+        """
         # If augmentation is implemented
         pass
 
@@ -123,23 +290,66 @@ class TestDataLoader:
     """Tests for DataLoader integration."""
 
     def test_dataloader_batching(self):
-        """Test that DataLoader creates proper batches."""
+        """
+        Purpose:
+            Test that DataLoader creates proper batches.
+            
+        Workflow:
+            1. Create DataLoader(batch_size=B).
+            2. Iterate.
+            3. Verify batch dimensions.
+            
+        ToDo:
+            - Implement test.
+        """
         # Batches should have correct size
         # Last batch handling
         pass
 
     def test_dataloader_shuffling(self):
-        """Test that shuffling works correctly."""
+        """
+        Purpose:
+            Test that shuffling works correctly.
+            
+        Workflow:
+            1. Iterate twice with shuffle=True.
+            2. Verify order differs.
+            
+        ToDo:
+            - Implement test.
+        """
         # Order should change between epochs
         pass
 
     def test_dataloader_num_workers(self):
-        """Test multi-process data loading."""
+        """
+        Purpose:
+            Test multi-process data loading.
+            
+        Workflow:
+            1. DataLoader(num_workers=2).
+            2. Iterate.
+            3. Verify no crash/deadlock.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should work with num_workers > 0
         pass
 
     def test_dataloader_pin_memory(self):
-        """Test pin_memory option for CUDA."""
+        """
+        Purpose:
+            Test pin_memory option for CUDA.
+            
+        Workflow:
+            1. DataLoader(pin_memory=True).
+            2. Iterate.
+            3. Verify tensor.is_pinned() (if cuda available).
+            
+        ToDo:
+            - Implement test.
+        """
         # Should work when enabled
         pass
 
@@ -149,22 +359,66 @@ class TestDataPreprocessing:
     """Tests for data preprocessing utilities."""
 
     def test_normalize_audio(self):
-        """Test audio normalization."""
+        """
+        Purpose:
+            Test audio normalization.
+            
+        Workflow:
+            1. Create raw audio.
+            2. Normalize.
+            3. Verify range [-1, 1].
+            
+        ToDo:
+            - Implement test.
+        """
         # Should normalize to standard range
         pass
 
     def test_normalize_images(self):
-        """Test image normalization."""
+        """
+        Purpose:
+            Test image normalization.
+            
+        Workflow:
+            1. Create raw images.
+            2. Normalize (e.g. ImageNet statistics).
+            3. Verify mean/std approx 0/1.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should normalize with mean/std
         pass
 
     def test_quaternion_normalization(self):
-        """Test quaternion normalization."""
+        """
+        Purpose:
+            Test quaternion normalization.
+            
+        Workflow:
+            1. Create random 4D vectors.
+            2. Normalize.
+            3. Verify magnitude is 1.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should ensure unit quaternions
         pass
 
     def test_resample_audio(self):
-        """Test audio resampling to target sample rate."""
+        """
+        Purpose:
+            Test audio resampling to target sample rate.
+            
+        Workflow:
+            1. Create audio at rate A.
+            2. Resample to B.
+            3. Verify duration/length change correct.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should change sample rate correctly
         pass
 
@@ -174,22 +428,62 @@ class TestDataValidation:
     """Tests for data validation."""
 
     def test_validate_input_shapes(self):
-        """Test validation of input data shapes."""
+        """
+        Purpose:
+            Test validation of input data shapes.
+            
+        Workflow:
+            1. Pass invalid shapes.
+            2. Assert ValueError raised.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should detect mismatched shapes
         pass
 
     def test_validate_value_ranges(self):
-        """Test validation of value ranges."""
+        """
+        Purpose:
+            Test validation of value ranges.
+            
+        Workflow:
+            1. Pass out of bound values (e.g. image > 255 or < 0).
+            2. Assert error.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should detect out-of-range values
         pass
 
     def test_validate_required_fields(self):
-        """Test that required fields are present."""
+        """
+        Purpose:
+            Test that required fields are present.
+            
+        Workflow:
+            1. Pass dict missing required key.
+            2. Assert error.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should error on missing required fields
         pass
 
     def test_validate_dtypes(self):
-        """Test that data types are correct."""
+        """
+        Purpose:
+            Test that data types are correct.
+            
+        Workflow:
+            1. Pass int tensor where float expected.
+            2. Assert error or conversion.
+            
+        ToDo:
+            - Implement test.
+        """
         # Should verify tensor dtypes
         pass
 
@@ -199,23 +493,73 @@ class TestDataAugmentation:
     """Tests for data augmentation (if implemented)."""
 
     def test_audio_time_stretch(self):
-        """Test audio time stretching augmentation."""
+        """
+        Purpose:
+            Test audio time stretching augmentation.
+            
+        Workflow:
+            1. Apply time stretch.
+            2. Verify duration change.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_audio_pitch_shift(self):
-        """Test audio pitch shifting augmentation."""
+        """
+        Purpose:
+            Test audio pitch shifting augmentation.
+            
+        Workflow:
+            1. Apply pitch shift.
+            2. Verify frequency content change (or just no crash).
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_image_color_jitter(self):
-        """Test image color jittering."""
+        """
+        Purpose:
+            Test image color jittering.
+            
+        Workflow:
+            1. Apply color jitter.
+            2. Verify pixel values changed.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_image_random_crop(self):
-        """Test image random cropping."""
+        """
+        Purpose:
+            Test image random cropping.
+            
+        Workflow:
+            1. Apply random crop.
+            2. Verify output size matches target.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_joint_position_noise(self):
-        """Test adding noise to joint positions."""
+        """
+        Purpose:
+            Test adding noise to joint positions.
+            
+        Workflow:
+            1. Apply noise.
+            2. Verify values changed but shape preserved.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
 
@@ -225,19 +569,63 @@ class TestRealDataLoading:
     """Tests for loading real (non-synthetic) data."""
 
     def test_load_audio_files(self):
-        """Test loading audio from files."""
+        """
+        Purpose:
+            Test loading audio from files.
+            
+        Workflow:
+            1. Point to audio file.
+            2. Load.
+            3. Verify tensor.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_load_video_frames(self):
-        """Test loading video frames."""
+        """
+        Purpose:
+            Test loading video frames.
+            
+        Workflow:
+            1. Point to video file.
+            2. Load frames.
+            3. Verify tensor.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_load_motion_capture_data(self):
-        """Test loading motion capture data."""
+        """
+        Purpose:
+            Test loading motion capture data.
+            
+        Workflow:
+            1. Point to mocap file.
+            2. Load.
+            3. Verify tensor.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
     def test_load_vr_recordings(self):
-        """Test loading VR session recordings."""
+        """
+        Purpose:
+            Test loading VR session recordings.
+            
+        Workflow:
+            1. Point to VR log.
+            2. Load.
+            3. Verify multi-modal data.
+            
+        ToDo:
+            - Implement test.
+        """
         pass
 
 
@@ -246,7 +634,18 @@ class TestDataUtilities:
     """Tests for data utility functions."""
 
     def test_create_padding_mask(self):
-        """Test creation of padding masks."""
+        """
+        Purpose:
+            Test creation of padding masks.
+            
+        Workflow:
+            1. Define seq lengths.
+            2. Create mask.
+            3. Verify 1s and 0s in correct places.
+            
+        ToDo:
+            - None
+        """
         # Create dummy sequence lengths
         seq_lengths = torch.tensor([10, 8, 5, 12])
         max_len = 15
@@ -264,7 +663,17 @@ class TestDataUtilities:
         assert not mask[0, 10:].any()
 
     def test_pad_sequences(self):
-        """Test sequence padding utility."""
+        """
+        Purpose:
+            Test sequence padding utility.
+            
+        Workflow:
+            1. pad_sequences([seq1, seq2]).
+            2. Verify output is padded to max len.
+            
+        ToDo:
+            - None
+        """
         # Variable length sequences
         seq1 = torch.tensor([1, 2, 3])
         seq2 = torch.tensor([4, 5])
@@ -284,7 +693,18 @@ class TestDataUtilities:
         assert torch.equal(padded[2], torch.tensor([6, 7, 8, 9]))
 
     def test_compute_sequence_lengths(self):
-        """Test computing sequence lengths from padded data."""
+        """
+        Purpose:
+            Test computing sequence lengths from padded data.
+            
+        Workflow:
+            1. Give padded tensor.
+            2. Compute lengths.
+            3. Verify match.
+            
+        ToDo:
+            - None
+        """
         # Padded sequences
         padded = torch.tensor([
             [1, 2, 3, 0, 0],
@@ -299,7 +719,18 @@ class TestDataUtilities:
         assert torch.equal(lengths, torch.tensor([3, 2, 5]))
 
     def test_batch_to_device_utility(self):
-        """Test utility for moving batch to device."""
+        """
+        Purpose:
+            Test utility for moving batch to device.
+            
+        Workflow:
+            1. Create nested batch on CPU.
+            2. Move to (mock) device.
+            3. Verify all tensors moved.
+            
+        ToDo:
+            - None
+        """
         batch = {
             "tokens": torch.randint(0, 1000, (4, 10)),
             "audio": torch.randn(4, 16000),
@@ -313,6 +744,17 @@ class TestDataUtilities:
 
         # Function to recursively move to device
         def to_device(obj, device):
+            """
+            Purpose:
+                Recursively move object to device.
+                
+            Args:
+                obj: Object to move.
+                device: Target device.
+                
+            Returns:
+                Object on device.
+            """
             if isinstance(obj, torch.Tensor):
                 return obj.to(device)
             elif isinstance(obj, dict):
@@ -328,7 +770,18 @@ class TestDataUtilities:
         assert batch_on_device["nested"]["positions"].device.type == device
 
     def test_normalize_tensor_utility(self):
-        """Test tensor normalization utility."""
+        """
+        Purpose:
+            Test tensor normalization utility.
+            
+        Workflow:
+            1. Create random tensor.
+            2. Normalize.
+            3. Verify mean~0, std~1.
+            
+        ToDo:
+            - None
+        """
         tensor = torch.randn(10, 100) * 10 + 50  # mean≈50, std≈10
 
         # Normalize
@@ -341,7 +794,18 @@ class TestDataUtilities:
         assert (normalized.std(dim=1) - 1.0).abs().mean() < 0.1  # Close to 1
 
     def test_denormalize_tensor_utility(self):
-        """Test tensor denormalization utility."""
+        """
+        Purpose:
+            Test tensor denormalization utility.
+            
+        Workflow:
+            1. Normalize tensor.
+            2. Denormalize.
+            3. Compare with original.
+            
+        ToDo:
+            - None
+        """
         original = torch.randn(10, 100) * 10 + 50
 
         # Normalize
@@ -360,7 +824,17 @@ class TestDataIntegrity:
     """Tests for data integrity checks."""
 
     def test_detect_nan_in_batch(self):
-        """Test detection of NaN values in data."""
+        """
+        Purpose:
+            Test detection of NaN values in data.
+            
+        Workflow:
+            1. Create clean batch -> No NaN.
+            2. Inject NaN -> Yes NaN.
+            
+        ToDo:
+            - None
+        """
         batch = {
             "tokens": torch.randint(0, 1000, (4, 10)),
             "audio": torch.randn(4, 16000),
@@ -376,7 +850,17 @@ class TestDataIntegrity:
         assert has_nan
 
     def test_detect_inf_in_batch(self):
-        """Test detection of infinite values in data."""
+        """
+        Purpose:
+            Test detection of infinite values in data.
+            
+        Workflow:
+            1. Create clean batch -> No Inf.
+            2. Inject Inf -> Yes Inf.
+            
+        ToDo:
+            - None
+        """
         batch = {
             "tokens": torch.randint(0, 1000, (4, 10)),
             "audio": torch.randn(4, 16000),
@@ -392,7 +876,17 @@ class TestDataIntegrity:
         assert has_inf
 
     def test_check_batch_consistency(self):
-        """Test that batch has consistent sizes across modalities."""
+        """
+        Purpose:
+            Test that batch has consistent sizes across modalities.
+            
+        Workflow:
+            1. Create batch with consistent sizes.
+            2. Check sizes match.
+            
+        ToDo:
+            - None
+        """
         batch = {
             "tokens": torch.randint(0, 1000, (4, 10)),
             "audio": torch.randn(4, 16000),

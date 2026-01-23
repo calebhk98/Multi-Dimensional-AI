@@ -15,13 +15,29 @@ class SimpleModel(nn.Module):
     """Simple model for testing."""
 
     def __init__(self, input_dim=10, hidden_dim=20, output_dim=5):
+        """
+        Simple model init.
+        
+        Args:
+            input_dim: Input dimension.
+            hidden_dim: Hidden dimension.
+            output_dim: Output dimension.
+        """
         super().__init__()
         self.fc = nn.Linear(input_dim, hidden_dim)
         self.output = nn.Linear(hidden_dim, output_dim)
         self.loss_fn = nn.MSELoss()
 
     def forward(self, **kwargs):
-        """Forward pass that handles multi-modal inputs."""
+        """
+        Forward pass that handles multi-modal inputs.
+            
+        Args:
+            **kwargs: Inputs.
+            
+        Returns:
+            Dict with outputs.
+        """
         # For testing, just use internal_voice_tokens if provided
         x = kwargs.get('internal_voice_tokens', torch.randn(2, 10))
         if x.dim() > 2:
@@ -31,7 +47,16 @@ class SimpleModel(nn.Module):
         return {"hidden_states": h, "output": out}
 
     def compute_loss(self, outputs, targets):
-        """Compute loss for testing."""
+        """
+        Compute loss for testing.
+            
+        Args:
+            outputs: Model outputs.
+            targets: Target values.
+            
+        Returns:
+            Tuple of (loss, loss_dict).
+        """
         loss = self.loss_fn(outputs["output"], targets.get("internal_text", torch.zeros_like(outputs["output"])))
         loss_dict = {"total": loss, "mse": loss}
         return loss, loss_dict
@@ -41,7 +66,18 @@ class TestTrainerInitialization:
     """Tests for Trainer initialization."""
 
     def test_trainer_basic_initialization(self):
-        """Test basic trainer initialization."""
+        """
+        Purpose:
+            Test basic trainer initialization with a standard config.
+
+        Workflow:
+            1. Create a model and config.
+            2. Initialize Trainer.
+            3. Verify attributes are set correctly.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -68,7 +104,18 @@ class TestTrainerInitialization:
         assert trainer.save_interval == 100
 
     def test_trainer_with_validation_loader(self):
-        """Test trainer initialization with validation loader."""
+        """
+        Purpose:
+            Test trainer initialization with validation loader.
+
+        Workflow:
+            1. Create model and config.
+            2. Initialize Trainer with valid_loader.
+            3. Verify val_loader is stored.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -81,7 +128,17 @@ class TestTrainerInitialization:
         assert trainer.val_loader == val_loader
 
     def test_trainer_default_config_values(self):
-        """Test that trainer uses default values for missing config."""
+        """
+        Purpose:
+            Test that trainer uses default values for missing config.
+
+        Workflow:
+            1. Initialize Trainer with empty config.
+            2. Verify default values for steps, intervals, etc.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}  # Empty training config
 
@@ -95,7 +152,18 @@ class TestTrainerInitialization:
         assert trainer.save_interval == 100
 
     def test_trainer_custom_optimizer_config(self):
-        """Test trainer with custom optimizer configuration."""
+        """
+        Purpose:
+             Test trainer with custom optimizer configuration.
+
+        Workflow:
+            1. Define config with custom optimizer params.
+            2. Initialize Trainer.
+            3. Verify optimizer defaults match config.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -118,7 +186,18 @@ class TestTrainerInitialization:
         assert trainer.optimizer.defaults['weight_decay'] == 0.05
 
     def test_trainer_creates_save_directory(self, tmp_path):
-        """Test that trainer creates checkpoint save directory."""
+        """
+        Purpose:
+            Test that trainer creates checkpoint save directory.
+
+        Workflow:
+            1. Define save dict in config.
+            2. Initialize Trainer.
+            3. Verify directory exists.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         save_dir = tmp_path / "test_checkpoints"
         config = {
@@ -137,7 +216,17 @@ class TestTrainerInitialization:
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_trainer_cuda_device(self):
-        """Test trainer initialization with CUDA device."""
+        """
+        Purpose:
+            Test trainer initialization with CUDA device.
+
+        Workflow:
+            1. Initialize Trainer with device='cuda'.
+            2. Verify model parameters are on CUDA.
+
+        ToDo:
+            - Skip if no CUDA.
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -154,7 +243,18 @@ class TestTrainerTrainStep:
     """Tests for Trainer.train_step() method."""
 
     def test_train_step_basic(self):
-        """Test basic training step execution."""
+        """
+        Purpose:
+            Test basic training step execution.
+
+        Workflow:
+            1. Initialize Trainer.
+            2. Run train_step with a batch.
+            3. Verify loss is scalar and loss_dict contains 'total'.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -177,7 +277,18 @@ class TestTrainerTrainStep:
         assert "total" in loss_dict
 
     def test_train_step_backward_pass(self):
-        """Test that train_step performs backward pass correctly."""
+        """
+        Purpose:
+            Test that train_step performs backward pass correctly.
+
+        Workflow:
+            1. Ensure gradients are initially None.
+            2. Run train_step.
+            3. Verify gradients are populated.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -202,7 +313,18 @@ class TestTrainerTrainStep:
             assert param.grad is not None
 
     def test_train_step_optimizer_step(self):
-        """Test that train_step updates model parameters."""
+        """
+        Purpose:
+            Test that train_step updates model parameters.
+
+        Workflow:
+            1. Store initial parameters.
+            2. Run train_step.
+            3. Verify parameters have changed.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -226,7 +348,19 @@ class TestTrainerTrainStep:
             assert not torch.equal(initial, current)
 
     def test_train_step_gradient_clipping(self):
-        """Test that gradient clipping is applied."""
+        """
+        Purpose:
+            Test that gradient clipping is applied.
+
+        Workflow:
+            1. Create batch with large values.
+            2. Mock clip_grad_norm_.
+            3. Run train_step.
+            4. Verify clip was called.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -246,7 +380,18 @@ class TestTrainerTrainStep:
             mock_clip.assert_called_once()
 
     def test_train_step_with_nested_touch_data(self):
-        """Test train_step with nested touch data structure."""
+        """
+        Purpose:
+            Test train_step with nested touch data structure.
+
+        Workflow:
+            1. Create batch with nested dictionary inputs.
+            2. Run train_step.
+            3. Verify no errors and loss is returned.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -270,7 +415,18 @@ class TestTrainerTrainStep:
         assert isinstance(loss, torch.Tensor)
 
     def test_train_step_with_animation_targets(self):
-        """Test train_step with nested animation targets."""
+        """
+        Purpose:
+            Test train_step with nested animation targets.
+
+        Workflow:
+            1. Create batch with nested targets.
+            2. Run train_step.
+            3. Verify execution.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -297,7 +453,18 @@ class TestTrainerSaveCheckpoint:
     """Tests for Trainer.save_checkpoint() method."""
 
     def test_save_checkpoint_basic(self, tmp_path):
-        """Test basic checkpoint saving."""
+        """
+        Purpose:
+            Test basic checkpoint saving.
+
+        Workflow:
+            1. Configure save_dir.
+            2. Run save_checkpoint(step=100).
+            3. Verify file exists.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -315,7 +482,17 @@ class TestTrainerSaveCheckpoint:
         assert checkpoint_path.exists()
 
     def test_save_checkpoint_final(self, tmp_path):
-        """Test saving final checkpoint."""
+        """
+        Purpose:
+            Test saving final checkpoint.
+
+        Workflow:
+            1. Run save_checkpoint with final=True.
+            2. Verify 'model_final.pt' exists.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -333,7 +510,18 @@ class TestTrainerSaveCheckpoint:
         assert checkpoint_path.exists()
 
     def test_checkpoint_contents(self, tmp_path):
-        """Test that checkpoint contains all necessary information."""
+        """
+        Purpose:
+            Test that checkpoint contains all necessary information.
+
+        Workflow:
+            1. Save checkpoint.
+            2. Load checkpoint.
+            3. Verify keys (step, model_state, optimizer_state, config).
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -359,7 +547,19 @@ class TestTrainerSaveCheckpoint:
         assert checkpoint['config'] == config
 
     def test_load_from_checkpoint(self, tmp_path):
-        """Test loading model from checkpoint."""
+        """
+        Purpose:
+            Test loading model from checkpoint.
+
+        Workflow:
+            1. Save checkpoint from Model A.
+            2. Initialize Model B.
+            3. Load checkpoint into Model B.
+            4. Verify parameters match.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -385,7 +585,17 @@ class TestTrainerSaveCheckpoint:
             assert torch.equal(p1, p2)
 
     def test_multiple_checkpoints(self, tmp_path):
-        """Test saving multiple checkpoints."""
+        """
+        Purpose:
+            Test saving multiple checkpoints.
+
+        Workflow:
+            1. Call save_checkpoint multiple times.
+            2. Verify all files exist.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -411,7 +621,19 @@ class TestTrainerFullTraining:
     """Tests for Trainer.train() method and full training loop."""
 
     def test_training_loop_completes(self, tmp_path):
-        """Test that training loop completes successfully."""
+        """
+        Purpose:
+            Test that training loop completes successfully.
+
+        Workflow:
+            1. Configure steps and save dir.
+            2. Mock train_step to return dummy loss.
+            3. Run train().
+            4. Verify final checkpoint exists.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -432,6 +654,15 @@ class TestTrainerFullTraining:
         original_train_step = trainer.train_step
 
         def mock_train_step(batch):
+            """
+            Mock of train step for testing loop without full backward pass.
+            
+            Args:
+                batch: Input batch.
+                
+            Returns:
+                Tuple of (loss, loss_dict).
+            """
             loss = torch.tensor(1.0, requires_grad=True)
             loss_dict = {"total": loss, "mse": loss}
             # Still do gradient updates
@@ -444,7 +675,19 @@ class TestTrainerFullTraining:
         assert (tmp_path / "model_final.pt").exists()
 
     def test_training_loop_stops_at_max_steps(self, tmp_path):
-        """Test that training stops at max_steps."""
+        """
+        Purpose:
+             Test that training stops at max_steps.
+
+        Workflow:
+            1. Set max_steps=5.
+            2. Add counter wrapper to train_step.
+            3. Run train().
+            4. Verify count equals max_steps.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         max_steps = 5
         config = {
@@ -466,6 +709,15 @@ class TestTrainerFullTraining:
         original_train_step = trainer.train_step
 
         def counting_train_step(batch):
+            """
+            Wrapper to count calls to train_step.
+            
+            Args:
+                batch: Input batch.
+                
+            Returns:
+                Result of original train_step.
+            """
             nonlocal call_count
             call_count += 1
             return original_train_step(batch)
@@ -476,7 +728,18 @@ class TestTrainerFullTraining:
         assert call_count == max_steps
 
     def test_training_saves_checkpoint_at_interval(self, tmp_path):
-        """Test that checkpoints are saved at specified intervals."""
+        """
+        Purpose:
+            Test that checkpoints are saved at specified intervals.
+
+        Workflow:
+            1. Set save_interval=10, max_steps=25.
+            2. Run train().
+            3. Verify checkpoints at 10, 20, and final exist.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -500,7 +763,19 @@ class TestTrainerFullTraining:
         assert (tmp_path / "model_final.pt").exists()
 
     def test_training_with_small_dataset(self, tmp_path):
-        """Test training with dataset smaller than max_steps."""
+        """
+        Purpose:
+            Test training with dataset smaller than max_steps.
+
+        Workflow:
+            1. Create small dataset (5 batches).
+            2. Set max_steps=100.
+            3. Run train().
+            4. Verify loop continues recycling data until 100 steps.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -526,7 +801,17 @@ class TestTrainerEdgeCases:
     """Tests for edge cases and error handling."""
 
     def test_trainer_with_empty_config(self):
-        """Test trainer with completely empty config."""
+        """
+        Purpose:
+            Test trainer with completely empty config.
+
+        Workflow:
+            1. Initialize with config={}.
+            2. Verify defaults are used.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {}
 
@@ -538,7 +823,18 @@ class TestTrainerEdgeCases:
         assert trainer.max_steps == 1000
 
     def test_trainer_gradient_nan_detection(self):
-        """Test behavior when gradients become NaN."""
+        """
+        Purpose:
+            Test behavior when gradients become NaN.
+
+        Workflow:
+            1. Create batch with NaNs.
+            2. Run train_step.
+            3. Verify it does not crash (check loss handling).
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {"training": {}}
 
@@ -558,7 +854,18 @@ class TestTrainerEdgeCases:
         # Loss might be NaN, which is expected behavior
 
     def test_model_mode_after_training(self, tmp_path):
-        """Test that model is in train mode during training."""
+        """
+        Purpose:
+            Test that model is in train mode during training.
+
+        Workflow:
+            1. Add wrapper to train_step that asserts model.training is True.
+            2. Run train().
+            3. Verify assertions pass.
+
+        ToDo:
+            - None
+        """
         model = SimpleModel()
         config = {
             "training": {
@@ -576,6 +883,15 @@ class TestTrainerEdgeCases:
         original_train_step = trainer.train_step
 
         def check_mode_train_step(batch):
+            """
+            Verifies model is in training mode during step.
+            
+            Args:
+                batch: Input batch.
+                
+            Returns:
+                Result of original train_step.
+            """
             assert trainer.model.training
             return original_train_step(batch)
 

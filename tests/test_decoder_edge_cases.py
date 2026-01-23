@@ -15,7 +15,18 @@ class TestAnimationDecoderEdgeCases:
     """Edge cases for AnimationDecoder."""
 
     def test_normalize_quaternion_method(self):
-        """Test normalize_quaternion method directly."""
+        """
+        Purpose:
+            Test normalize_quaternion method directly.
+            
+        Workflow:
+            1. Create unnormalized quaternion.
+            2. Normalize.
+            3. Verify magnitude is 1.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         # Unnormalized quaternion
@@ -27,7 +38,18 @@ class TestAnimationDecoderEdgeCases:
         assert torch.allclose(magnitudes, torch.ones_like(magnitudes), atol=1e-6)
 
     def test_normalize_quaternion_zero_vector(self):
-        """Test normalizing zero quaternion."""
+        """
+        Purpose:
+            Test normalizing zero quaternion.
+            
+        Workflow:
+            1. Create zero quaternion.
+            2. Normalize.
+            3. Verify it does not crash (handle gracefully).
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         # Zero quaternion (edge case)
@@ -39,7 +61,18 @@ class TestAnimationDecoderEdgeCases:
         assert normalized.shape == quat.shape
 
     def test_normalize_quaternion_batched(self):
-        """Test normalize_quaternion with batched input."""
+        """
+        Purpose:
+            Test normalize_quaternion with batched input.
+            
+        Workflow:
+            1. Create batched quaternions.
+            2. Normalize.
+            3. Verify all magnitudes are 1.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         quat = torch.randn(4, 10, 24, 4)
@@ -50,7 +83,18 @@ class TestAnimationDecoderEdgeCases:
         assert torch.allclose(magnitudes, torch.ones_like(magnitudes), atol=1e-5)
 
     def test_to_vrchat_format_method(self):
-        """Test to_vrchat_format conversion (currently untested)."""
+        """
+        Purpose:
+            Test to_vrchat_format conversion (currently untested).
+            
+        Workflow:
+            1. Create dummy animation params.
+            2. Convert to VRChat format.
+            3. Verify output structure correctness.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(
             embedding_dim=512,
             num_joints=24,
@@ -76,7 +120,17 @@ class TestAnimationDecoderEdgeCases:
         assert "EyeTracking" in vrchat_format["FaceTracking"]
 
     def test_blend_shapes_in_valid_range(self):
-        """Test that blend shapes are clamped to [0, 1] range."""
+        """
+        Purpose:
+            Test that blend shapes are clamped to [0, 1] range.
+            
+        Workflow:
+            1. Generate output.
+            2. Verify blend shapes are >= 0 and <= 1.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512, num_blend_shapes=51)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -87,7 +141,18 @@ class TestAnimationDecoderEdgeCases:
         assert (blend_shapes <= 1).all()
 
     def test_eye_direction_normalized(self):
-        """Test that eye directions are normalized."""
+        """
+        Purpose:
+            Test that eye directions are normalized.
+            
+        Workflow:
+            1. Generate output.
+            2. Extract eye vectors.
+            3. Verify magnitudes are 1.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -107,7 +172,18 @@ class TestAnimationDecoderEdgeCases:
         assert torch.allclose(right_magnitudes, torch.ones_like(right_magnitudes), atol=1e-5)
 
     def test_eye_openness_in_valid_range(self):
-        """Test that eye openness is in [0, 1] range."""
+        """
+        Purpose:
+            Test that eye openness is in [0, 1] range.
+            
+        Workflow:
+            1. Generate output.
+            2. Extract openness.
+            3. Verify range.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -125,7 +201,18 @@ class TestAnimationDecoderEdgeCases:
         assert (right_eye_open <= 1).all()
 
     def test_custom_loss_weights(self):
-        """Test compute_loss with custom loss weights."""
+        """
+        Purpose:
+            Test compute_loss with custom loss weights.
+            
+        Workflow:
+            1. Define custom weights.
+            2. Compute loss.
+            3. Verify loss entries exist.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -154,7 +241,18 @@ class TestAnimationDecoderEdgeCases:
         assert "total_animation_loss" in loss_dict
 
     def test_geodesic_quaternion_distance(self):
-        """Test that quaternion loss uses geodesic distance."""
+        """
+        Purpose:
+            Test that quaternion loss uses geodesic distance.
+            
+        Workflow:
+            1. Set targets = predictions.
+            2. Compute loss.
+            3. Verify body_loss is near zero.
+            
+        ToDo:
+            - None
+        """
         decoder = AnimationDecoder(embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -178,7 +276,18 @@ class TestAnimationDecoderEdgeCases:
         assert loss_dict["body_loss"] < 0.1
 
     def test_various_num_joints(self):
-        """Test with different number of joints."""
+        """
+        Purpose:
+            Test with different number of joints.
+            
+        Workflow:
+            1. Iterate num_joints.
+            2. Create decoder.
+            3. Verify output shape matches joints.
+            
+        ToDo:
+            - None
+        """
         for num_joints in [10, 24, 32, 52]:
             decoder = AnimationDecoder(
                 embedding_dim=512,
@@ -191,7 +300,18 @@ class TestAnimationDecoderEdgeCases:
             assert output["joint_rotations"].shape == (2, 10, num_joints, 4)
 
     def test_various_num_blend_shapes(self):
-        """Test with different number of blend shapes."""
+        """
+        Purpose:
+            Test with different number of blend shapes.
+            
+        Workflow:
+            1. Iterate num_blend_shapes.
+            2. Create decoder.
+            3. Verify output shape matches blend shapes.
+            
+        ToDo:
+            - None
+        """
         for num_blend_shapes in [51, 52, 61]:
             decoder = AnimationDecoder(
                 embedding_dim=512,
@@ -208,7 +328,17 @@ class TestAudioDecoderEdgeCases:
     """Edge cases for AudioDecoder."""
 
     def test_null_token_enabled(self):
-        """Test with use_null_token=True."""
+        """
+        Purpose:
+            Test with use_null_token=True.
+            
+        Workflow:
+            1. Initialize with null token.
+            2. Verify null_token_id is set (last token).
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(
             codebook_size=1024,
             embedding_dim=512,
@@ -218,7 +348,17 @@ class TestAudioDecoderEdgeCases:
         assert decoder.null_token_id == 1023  # Last token
 
     def test_null_token_disabled(self):
-        """Test with use_null_token=False."""
+        """
+        Purpose:
+            Test with use_null_token=False.
+            
+        Workflow:
+            1. Initialize without null token.
+            2. Verify null_token_id is None.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(
             codebook_size=1024,
             embedding_dim=512,
@@ -228,7 +368,18 @@ class TestAudioDecoderEdgeCases:
         assert decoder.null_token_id is None
 
     def test_temperature_sampling(self):
-        """Test sampling with different temperatures."""
+        """
+        Purpose:
+            Test sampling with different temperatures.
+            
+        Workflow:
+            1. Sample with low temp (deterministic).
+            2. Sample with high temp (random).
+            3. Verify output shapes.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -244,7 +395,17 @@ class TestAudioDecoderEdgeCases:
         assert output_high["tokens"].shape == (2, 10)
 
     def test_top_k_filtering(self):
-        """Test top-k sampling."""
+        """
+        Purpose:
+            Test top-k sampling.
+            
+        Workflow:
+            1. Sample with top_k.
+            2. Verify output shape and validity.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -258,7 +419,17 @@ class TestAudioDecoderEdgeCases:
         assert (output["tokens"] < 1024).all()
 
     def test_top_p_nucleus_sampling(self):
-        """Test nucleus (top-p) sampling."""
+        """
+        Purpose:
+            Test nucleus (top-p) sampling.
+            
+        Workflow:
+            1. Sample with top_p.
+            2. Verify output shape.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -269,7 +440,17 @@ class TestAudioDecoderEdgeCases:
         assert output["tokens"].shape == (2, 10)
 
     def test_combined_top_k_top_p(self):
-        """Test combining top-k and top-p filtering."""
+        """
+        Purpose:
+            Test combining top-k and top-p filtering.
+            
+        Workflow:
+            1. Sample with both strategies.
+            2. Verify output.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -280,7 +461,18 @@ class TestAudioDecoderEdgeCases:
         assert output["tokens"].shape == (2, 10)
 
     def test_return_logits_mode(self):
-        """Test with return_logits=True."""
+        """
+        Purpose:
+            Test with return_logits=True.
+            
+        Workflow:
+            1. Call forward with return_logits=True.
+            2. Verify logits and probabilities present.
+            3. Verify probabilities sum to 1.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -299,7 +491,18 @@ class TestAudioDecoderEdgeCases:
         assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-5)
 
     def test_compute_loss_with_mask(self):
-        """Test compute_loss with attention mask."""
+        """
+        Purpose:
+            Test compute_loss with attention mask.
+            
+        Workflow:
+            1. Compute loss with mask.
+            2. Compute loss without mask.
+            3. Verify losses differ.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -325,7 +528,17 @@ class TestAudioDecoderEdgeCases:
         assert not torch.isclose(loss_with_mask, loss_without_mask)
 
     def test_compute_loss_no_mask(self):
-        """Test compute_loss without attention mask."""
+        """
+        Purpose:
+            Test compute_loss without attention mask.
+            
+        Workflow:
+            1. Compute loss.
+            2. Verify it is a scalar > 0.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -337,7 +550,18 @@ class TestAudioDecoderEdgeCases:
         assert loss > 0
 
     def test_various_codebook_sizes(self):
-        """Test with different codebook sizes."""
+        """
+        Purpose:
+            Test with different codebook sizes.
+            
+        Workflow:
+            1. Iterate sizes.
+            2. Create decoder.
+            3. Verify logits shape.
+            
+        ToDo:
+            - None
+        """
         for codebook_size in [256, 512, 1024, 2048]:
             decoder = AudioDecoder(
                 codebook_size=codebook_size,
@@ -350,7 +574,18 @@ class TestAudioDecoderEdgeCases:
             assert output["logits"].shape == (2, 10, codebook_size)
 
     def test_decode_to_waveform_placeholder(self):
-        """Test decode_to_waveform method (placeholder implementation)."""
+        """
+        Purpose:
+            Test decode_to_waveform method (placeholder implementation).
+            
+        Workflow:
+            1. Create mock vocoder.
+            2. Decode tokens to waveform.
+            3. Verify shape.
+            
+        ToDo:
+            - None
+        """
         decoder = AudioDecoder(codebook_size=1024, embedding_dim=512)
 
         audio_tokens = torch.randint(0, 1024, (2, 50))
@@ -358,6 +593,16 @@ class TestAudioDecoderEdgeCases:
         # Create mock vocoder
         class MockVocoder(nn.Module):
             def decode(self, tokens):
+                """
+                Purpose:
+                    Decode tokens to waveform (mock).
+                    
+                Args:
+                    tokens: Input tokens.
+                    
+                Returns:
+                    Dummy waveform.
+                """
                 batch_size, seq_len = tokens.shape
                 # Return dummy waveform
                 return torch.randn(batch_size, seq_len * 320)
@@ -374,7 +619,17 @@ class TestTextDecoderEdgeCases:
     """Edge cases for TextDecoder."""
 
     def test_null_token_enabled(self):
-        """Test with use_null_token=True."""
+        """
+        Purpose:
+            Test with use_null_token=True.
+            
+        Workflow:
+            1. Initialize with null token.
+            2. Verify null_token_id is set (last token).
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(
             vocab_size=1000,
             embedding_dim=512,
@@ -384,7 +639,17 @@ class TestTextDecoderEdgeCases:
         assert decoder.null_token_id == 999  # Last token
 
     def test_null_token_disabled(self):
-        """Test with use_null_token=False."""
+        """
+        Purpose:
+            Test with use_null_token=False.
+            
+        Workflow:
+            1. Initialize without null token.
+            2. Verify null_token_id is None.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(
             vocab_size=1000,
             embedding_dim=512,
@@ -394,7 +659,18 @@ class TestTextDecoderEdgeCases:
         assert decoder.null_token_id is None
 
     def test_temperature_sampling(self):
-        """Test sampling with different temperatures."""
+        """
+        Purpose:
+            Test sampling with different temperatures.
+            
+        Workflow:
+            1. Sample with low temp (deterministic).
+            2. Sample with high temp (random).
+            3. Verify output shapes.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -408,7 +684,17 @@ class TestTextDecoderEdgeCases:
         assert output_high["tokens"].shape == (2, 10)
 
     def test_top_k_sampling(self):
-        """Test top-k filtering."""
+        """
+        Purpose:
+            Test top-k filtering.
+            
+        Workflow:
+            1. Sample with top_k.
+            2. Verify output validity.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -419,7 +705,17 @@ class TestTextDecoderEdgeCases:
         assert (output["tokens"] < 1000).all()
 
     def test_top_p_sampling(self):
-        """Test nucleus sampling."""
+        """
+        Purpose:
+            Test nucleus sampling.
+            
+        Workflow:
+            1. Sample with top_p.
+            2. Verify output validity.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -429,7 +725,18 @@ class TestTextDecoderEdgeCases:
         assert output["tokens"].shape == (2, 10)
 
     def test_repetition_penalty(self):
-        """Test repetition penalty application."""
+        """
+        Purpose:
+            Test repetition penalty application.
+            
+        Workflow:
+            1. Sample without penalty.
+            2. Sample with penalty.
+            3. Verify both produce valid outputs.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -445,7 +752,17 @@ class TestTextDecoderEdgeCases:
         assert output_with_penalty["tokens"].shape == (2, 10)
 
     def test_return_logits(self):
-        """Test return_logits mode."""
+        """
+        Purpose:
+            Test return_logits mode.
+            
+        Workflow:
+            1. Call with return_logits=True.
+            2. Verify logits and probabilities present.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -459,7 +776,17 @@ class TestTextDecoderEdgeCases:
         assert output["logits"].shape == (2, 10, 1000)
 
     def test_compute_loss_with_mask(self):
-        """Test compute_loss with attention mask."""
+        """
+        Purpose:
+            Test compute_loss with attention mask.
+            
+        Workflow:
+            1. Compute loss using mask.
+            2. Verify scalar output > 0.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -477,7 +804,17 @@ class TestTextDecoderEdgeCases:
         assert loss > 0
 
     def test_compute_loss_no_mask(self):
-        """Test compute_loss without mask."""
+        """
+        Purpose:
+            Test compute_loss without mask.
+            
+        Workflow:
+            1. Compute loss.
+            2. Verify scalar output > 0.
+            
+        ToDo:
+            - None
+        """
         decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
@@ -488,7 +825,18 @@ class TestTextDecoderEdgeCases:
         assert loss.dim() == 0
 
     def test_various_vocab_sizes(self):
-        """Test with different vocabulary sizes."""
+        """
+        Purpose:
+            Test with different vocabulary sizes.
+            
+        Workflow:
+            1. Iterate sizes.
+            2. Create decoder.
+            3. Verify logits shape.
+            
+        ToDo:
+            - None
+        """
         for vocab_size in [500, 1000, 5000, 50000]:
             decoder = TextDecoder(
                 vocab_size=vocab_size,
@@ -505,7 +853,17 @@ class TestDecoderOutputConsistency:
     """Test consistency across decoders."""
 
     def test_all_decoders_have_compute_loss(self):
-        """Verify all decoders implement compute_loss method."""
+        """
+        Purpose:
+            Verify all decoders implement compute_loss method.
+            
+        Workflow:
+            1. List decoders.
+            2. Check hasattr 'compute_loss'.
+            
+        ToDo:
+            - None
+        """
         decoders = [
             TextDecoder(vocab_size=1000, embedding_dim=512),
             AudioDecoder(codebook_size=1024, embedding_dim=512),
@@ -517,7 +875,18 @@ class TestDecoderOutputConsistency:
             assert callable(decoder.compute_loss)
 
     def test_all_decoders_handle_batched_input(self):
-        """Test that all decoders handle batched inputs correctly."""
+        """
+        Purpose:
+            Test that all decoders handle batched inputs correctly.
+            
+        Workflow:
+            1. Create batch.
+            2. Pass to Text, Audio, Anim decoders.
+            3. Verify output batch size.
+            
+        ToDo:
+            - None
+        """
         hidden_states = torch.randn(4, 20, 512)
 
         # Text decoder
@@ -536,7 +905,17 @@ class TestDecoderOutputConsistency:
         assert anim_output["joint_rotations"].shape[0] == 4
 
     def test_decoders_produce_valid_outputs(self):
-        """Test that decoder outputs are in valid ranges."""
+        """
+        Purpose:
+            Test that decoder outputs are in valid ranges.
+            
+        Workflow:
+            1. Run all decoders.
+            2. Verify Output in Range (0-vocab or normalized).
+            
+        ToDo:
+            - None
+        """
         hidden_states = torch.randn(2, 10, 512)
 
         # Text decoder - tokens should be in vocab range
@@ -559,7 +938,18 @@ class TestDecoderOutputConsistency:
         assert torch.allclose(quat_norms, torch.ones_like(quat_norms), atol=1e-5)
 
     def test_decoders_handle_variable_sequence_lengths(self):
-        """Test decoders with different sequence lengths."""
+        """
+        Purpose:
+            Test decoders with different sequence lengths.
+            
+        Workflow:
+            1. Iterate seq_lens.
+            2. Run all decoders.
+            3. Verify output seq_len matches.
+            
+        ToDo:
+            - None
+        """
         for seq_len in [1, 5, 10, 50]:
             hidden_states = torch.randn(2, seq_len, 512)
 
