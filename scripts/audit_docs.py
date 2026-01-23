@@ -80,22 +80,23 @@ def check_file(filepath):
                 has_returns = "Returns:" in docstring or "Yields:" in docstring
                 
                 # Check if function has arguments but docstring doesn't mention them
-                # excluding 'self'
-                args_count = len([a for a in node.args.args if a.arg != 'self'])
-                if args_count > 0 and not has_args:
-                    issues.append("Missing 'Args:' section")
-                
-                # Check for return value (loose check, looking for return stmt)
-                has_return_stmt = False
-                for child in ast.walk(node):
-                    if isinstance(child, (ast.Return, ast.Yield)):
-                         if isinstance(child, ast.Return) and child.value is None:
-                             continue # ignore empty returns
-                         has_return_stmt = True
-                         break
-                
-                if has_return_stmt and not has_returns:
-                    issues.append("Missing 'Returns:' section")
+                # excluding 'self' and skipping test functions
+                if not node.name.startswith("test_"):
+                    args_count = len([a for a in node.args.args if a.arg != 'self'])
+                    if args_count > 0 and not has_args:
+                        issues.append("Missing 'Args:' section")
+                    
+                    # Check for return value (loose check, looking for return stmt)
+                    has_return_stmt = False
+                    for child in ast.walk(node):
+                        if isinstance(child, (ast.Return, ast.Yield)):
+                             if isinstance(child, ast.Return) and child.value is None:
+                                 continue # ignore empty returns
+                             has_return_stmt = True
+                             break
+                    
+                    if has_return_stmt and not has_returns:
+                        issues.append("Missing 'Returns:' section")
 
                 if issues:
                     missing_functions.append({
