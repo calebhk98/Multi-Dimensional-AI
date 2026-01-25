@@ -11,6 +11,49 @@ from unittest.mock import Mock, MagicMock, patch
 from src.training.trainer import Trainer
 
 
+
+from torch.utils.data import Dataset
+
+class MockDataset(Dataset):
+    """Mock dataset that returns dictionaries as expected by Trainer."""
+    
+    def __init__(self, size=10, input_dim=10, target_dim=5):
+        """
+        Initialize mock dataset.
+
+        Args:
+            size: Number of samples.
+            input_dim: Input feature dimension.
+            target_dim: Target feature dimension.
+        """
+        self.inputs = torch.randn(size, input_dim)
+        self.targets = torch.randn(size, target_dim)
+        
+    def __len__(self):
+        """
+        Get dataset size.
+
+        Returns:
+            Length of the dataset.
+        """
+        return len(self.inputs)
+        
+    def __getitem__(self, idx):
+        """
+        Get item at index.
+
+        Args:
+            idx: Index.
+
+        Returns:
+            Dictionary with inputs and targets.
+        """
+        return {
+            "inputs": {"internal_voice_tokens": self.inputs[idx]},
+            "targets": {"internal_text": self.targets[idx]}
+        }
+
+
 class SimpleModel(nn.Module):
     """Simple model for testing."""
 
@@ -645,7 +688,7 @@ class TestTrainerFullTraining:
         }
 
         # Create dataset with enough samples
-        dataset = TensorDataset(torch.randn(100, 10), torch.randn(100, 5))
+        dataset = MockDataset(size=100)
         train_loader = DataLoader(dataset, batch_size=2)
 
         trainer = Trainer(model, config, train_loader, device="cpu")
@@ -699,7 +742,7 @@ class TestTrainerFullTraining:
             }
         }
 
-        dataset = TensorDataset(torch.randn(100, 10), torch.randn(100, 5))
+        dataset = MockDataset(size=100)
         train_loader = DataLoader(dataset, batch_size=2)
 
         trainer = Trainer(model, config, train_loader, device="cpu")
@@ -750,7 +793,7 @@ class TestTrainerFullTraining:
             }
         }
 
-        dataset = TensorDataset(torch.randn(100, 10), torch.randn(100, 5))
+        dataset = MockDataset(size=100)
         train_loader = DataLoader(dataset, batch_size=2)
 
         trainer = Trainer(model, config, train_loader, device="cpu")
@@ -787,7 +830,7 @@ class TestTrainerFullTraining:
         }
 
         # Small dataset - only 5 batches
-        dataset = TensorDataset(torch.randn(10, 10), torch.randn(10, 5))
+        dataset = MockDataset(size=10)
         train_loader = DataLoader(dataset, batch_size=2)
 
         trainer = Trainer(model, config, train_loader, device="cpu")
@@ -874,7 +917,7 @@ class TestTrainerEdgeCases:
             }
         }
 
-        dataset = TensorDataset(torch.randn(100, 10), torch.randn(100, 5))
+        dataset = MockDataset(size=100)
         train_loader = DataLoader(dataset, batch_size=2)
 
         trainer = Trainer(model, config, train_loader, device="cpu")

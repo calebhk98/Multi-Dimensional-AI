@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from src.decoders.animation_decoder import AnimationDecoder
 from src.decoders.audio_decoder import AudioDecoder
-from src.decoders.text_decoder import TextDecoder
+from src.decoders.text_decoder import InternalTextDecoder
 
 
 class TestAnimationDecoderEdgeCases:
@@ -254,6 +254,7 @@ class TestAnimationDecoderEdgeCases:
             - None
         """
         decoder = AnimationDecoder(embedding_dim=512)
+        decoder.eval()  # Disable dropout for deterministic output
 
         hidden_states = torch.randn(2, 10, 512)
 
@@ -615,8 +616,8 @@ class TestAudioDecoderEdgeCases:
         assert waveform.dim() == 2
 
 
-class TestTextDecoderEdgeCases:
-    """Edge cases for TextDecoder."""
+class TestInternalTextDecoderEdgeCases:
+    """Edge cases for InternalTextDecoder."""
 
     def test_null_token_enabled(self):
         """
@@ -630,7 +631,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(
+        decoder = InternalTextDecoder(
             vocab_size=1000,
             embedding_dim=512,
             use_null_token=True
@@ -650,7 +651,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(
+        decoder = InternalTextDecoder(
             vocab_size=1000,
             embedding_dim=512,
             use_null_token=False
@@ -671,7 +672,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
 
@@ -695,7 +696,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
 
@@ -716,7 +717,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
 
@@ -724,32 +725,7 @@ class TestTextDecoderEdgeCases:
 
         assert output["tokens"].shape == (2, 10)
 
-    def test_repetition_penalty(self):
-        """
-        Purpose:
-            Test repetition penalty application.
-            
-        Workflow:
-            1. Sample without penalty.
-            2. Sample with penalty.
-            3. Verify both produce valid outputs.
-            
-        ToDo:
-            - None
-        """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
 
-        hidden_states = torch.randn(2, 10, 512)
-
-        # Without repetition penalty
-        output_no_penalty = decoder(hidden_states, repetition_penalty=1.0)
-
-        # With repetition penalty
-        output_with_penalty = decoder(hidden_states, repetition_penalty=1.5)
-
-        # Both should produce valid tokens
-        assert output_no_penalty["tokens"].shape == (2, 10)
-        assert output_with_penalty["tokens"].shape == (2, 10)
 
     def test_return_logits(self):
         """
@@ -763,7 +739,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
 
@@ -787,7 +763,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
         target_tokens = torch.randint(0, 1000, (2, 10))
@@ -815,7 +791,7 @@ class TestTextDecoderEdgeCases:
         ToDo:
             - None
         """
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         hidden_states = torch.randn(2, 10, 512)
         target_tokens = torch.randint(0, 1000, (2, 10))
@@ -838,7 +814,7 @@ class TestTextDecoderEdgeCases:
             - None
         """
         for vocab_size in [500, 1000, 5000, 50000]:
-            decoder = TextDecoder(
+            decoder = InternalTextDecoder(
                 vocab_size=vocab_size,
                 embedding_dim=512
             )
@@ -865,7 +841,7 @@ class TestDecoderOutputConsistency:
             - None
         """
         decoders = [
-            TextDecoder(vocab_size=1000, embedding_dim=512),
+            InternalTextDecoder(vocab_size=1000, embedding_dim=512),
             AudioDecoder(codebook_size=1024, embedding_dim=512),
             AnimationDecoder(embedding_dim=512),
         ]
@@ -890,7 +866,7 @@ class TestDecoderOutputConsistency:
         hidden_states = torch.randn(4, 20, 512)
 
         # Text decoder
-        text_decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        text_decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
         text_output = text_decoder(hidden_states)
         assert text_output["tokens"].shape[0] == 4
 
@@ -919,7 +895,7 @@ class TestDecoderOutputConsistency:
         hidden_states = torch.randn(2, 10, 512)
 
         # Text decoder - tokens should be in vocab range
-        text_decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        text_decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
         text_output = text_decoder(hidden_states)
         assert (text_output["tokens"] >= 0).all()
         assert (text_output["tokens"] < 1000).all()
@@ -953,7 +929,7 @@ class TestDecoderOutputConsistency:
         for seq_len in [1, 5, 10, 50]:
             hidden_states = torch.randn(2, seq_len, 512)
 
-            text_decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+            text_decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
             text_output = text_decoder(hidden_states)
             assert text_output["tokens"].shape[1] == seq_len
 

@@ -29,9 +29,10 @@ class TestConfigurationWorkflow:
             - None
         """
         # Step 1: Create initial config
+        # Step 1: Create initial config (just model config)
         initial_config = {
-            "model": {"hidden_dim": 768},
-            "training": {"lr": 1e-3}
+            "hidden_dim": 768,
+            "num_layers": 12
         }
 
         config_path = tmp_path / "model_config.yaml"
@@ -230,7 +231,7 @@ class TestEncoderDecoderIntegration:
             - None
         """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
-        from src.decoders.text_decoder import TextDecoder
+        from src.decoders.text_decoder import InternalTextDecoder
 
         embedding_dim = 512
         batch_size = 2
@@ -242,7 +243,7 @@ class TestEncoderDecoderIntegration:
         encoded = encoder(tokens)
 
         # Decode
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=embedding_dim)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=embedding_dim)
         decoded = decoder(encoded["embeddings"])
 
         assert decoded["tokens"].shape == (batch_size, seq_len)
@@ -368,9 +369,9 @@ class TestLossComputation:
         ToDo:
             - None
         """
-        from src.decoders.text_decoder import TextDecoder
+        from src.decoders.text_decoder import InternalTextDecoder
 
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
         hidden_states = torch.randn(2, 10, 512)
         target_tokens = torch.randint(0, 1000, (2, 10))
 
@@ -393,13 +394,13 @@ class TestLossComputation:
         ToDo:
             - None
         """
-        from src.decoders.text_decoder import TextDecoder
+        from src.decoders.text_decoder import InternalTextDecoder
         from src.decoders.audio_decoder import AudioDecoder
 
         hidden_states = torch.randn(2, 10, 512)
 
         # Text decoder loss
-        text_decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        text_decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
         text_targets = torch.randint(0, 1000, (2, 10))
         text_loss = text_decoder.compute_loss(hidden_states, text_targets)
 
@@ -503,9 +504,9 @@ class TestGradientFlow:
         ToDo:
             - None
         """
-        from src.decoders.text_decoder import TextDecoder
+        from src.decoders.text_decoder import InternalTextDecoder
 
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
         hidden_states = torch.randn(2, 10, 512, requires_grad=True)
         target_tokens = torch.randint(0, 1000, (2, 10))
 
@@ -532,10 +533,10 @@ class TestGradientFlow:
             - None
         """
         from src.encoders.internal_voice_encoder import InternalVoiceEncoder
-        from src.decoders.text_decoder import TextDecoder
+        from src.decoders.text_decoder import InternalTextDecoder
 
         encoder = InternalVoiceEncoder(vocab_size=1000, embedding_dim=512)
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         # Forward pass
         tokens = torch.randint(0, 1000, (2, 10))
@@ -682,9 +683,9 @@ class TestErrorHandling:
         ToDo:
             - None
         """
-        from src.decoders.text_decoder import TextDecoder
+        from src.decoders.text_decoder import InternalTextDecoder
 
-        decoder = TextDecoder(vocab_size=1000, embedding_dim=512)
+        decoder = InternalTextDecoder(vocab_size=1000, embedding_dim=512)
 
         # Wrong embedding dimension
         with pytest.raises((RuntimeError, ValueError)):

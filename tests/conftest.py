@@ -586,16 +586,16 @@ def touch_encoder(small_embedding_dim):
 @pytest.fixture
 def text_decoder(small_embedding_dim):
     """
-    Create TextDecoder instance.
+    Create InternalTextDecoder instance.
     
     Args:
         small_embedding_dim: Embedding dim fixture.
         
     Returns:
-        TextDecoder: Instance.
+        InternalTextDecoder: Instance.
     """
-    from src.decoders.text_decoder import TextDecoder
-    return TextDecoder(
+    from src.decoders.text_decoder import InternalTextDecoder
+    return InternalTextDecoder(
         vocab_size=1000,
         embedding_dim=small_embedding_dim
     )

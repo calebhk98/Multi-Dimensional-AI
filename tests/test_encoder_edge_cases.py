@@ -774,14 +774,23 @@ class TestTouchEncoderEdgeCases:
         )
 
         batch_size = 2
-        touch_data = {
-            "positions": torch.randn(batch_size, 10, 3),
-            "normals": torch.randn(batch_size, 10, 3),
-            "forces": torch.randn(batch_size, 10, 3),
-            "contact_active": torch.zeros(batch_size, 10, dtype=torch.bool),  # All inactive
-        }
+        
+        # All inactive
+        contact_active = torch.zeros(batch_size, 10, dtype=torch.bool)
+        
+        # Dummy data for other required args
+        contact_points = torch.randint(0, 10, (batch_size, 10))
+        surface_types = torch.randint(0, 8, (batch_size, 10))
+        contact_forces = torch.randn(batch_size, 10, 1)
+        contact_positions = torch.randn(batch_size, 10, 3)
 
-        output = encoder(touch_data)
+        output = encoder(
+            contact_active=contact_active,
+            contact_points=contact_points,
+            contact_forces=contact_forces,
+            contact_positions=contact_positions,
+            surface_types=surface_types
+        )
         assert output["embeddings"].shape == (batch_size, 10, 512)
 
     def test_single_contact_active(self):
@@ -807,14 +816,19 @@ class TestTouchEncoderEdgeCases:
         contact_active = torch.zeros(batch_size, 10, dtype=torch.bool)
         contact_active[:, 0] = True  # Only first contact active
 
-        touch_data = {
-            "positions": torch.randn(batch_size, 10, 3),
-            "normals": torch.randn(batch_size, 10, 3),
-            "forces": torch.randn(batch_size, 10, 3),
-            "contact_active": contact_active,
-        }
+        # Required inputs
+        contact_points = torch.randint(0, 10, (batch_size, 10))
+        surface_types = torch.randint(0, 8, (batch_size, 10))
+        contact_forces = torch.randn(batch_size, 10, 1)  # Scalar force
+        contact_positions = torch.randn(batch_size, 10, 3)
 
-        output = encoder(touch_data)
+        output = encoder(
+            contact_active=contact_active,
+            contact_points=contact_points,
+            contact_forces=contact_forces,
+            contact_positions=contact_positions,
+            surface_types=surface_types
+        )
         assert output["embeddings"].shape == (batch_size, 10, 512)
         # Attention mask should reflect active contacts
         assert output["attention_mask"][:, 0].all()
@@ -839,14 +853,19 @@ class TestTouchEncoderEdgeCases:
                 embedding_dim=512
             )
 
-            touch_data = {
-                "positions": torch.randn(2, max_contacts, 3),
-                "normals": torch.randn(2, max_contacts, 3),
-                "forces": torch.randn(2, max_contacts, 3),
-                "contact_active": torch.ones(2, max_contacts, dtype=torch.bool),
-            }
+            contact_active = torch.ones(2, max_contacts, dtype=torch.bool)
+            contact_points = torch.randint(0, 10, (2, max_contacts))
+            surface_types = torch.randint(0, 8, (2, max_contacts))
+            contact_forces = torch.randn(2, max_contacts, 1)
+            contact_positions = torch.randn(2, max_contacts, 3)
 
-            output = encoder(touch_data)
+            output = encoder(
+                contact_active=contact_active,
+                contact_points=contact_points,
+                contact_forces=contact_forces,
+                contact_positions=contact_positions,
+                surface_types=surface_types
+            )
             assert output["embeddings"].shape == (2, max_contacts, 512)
 
     def test_zero_forces(self):
@@ -868,50 +887,23 @@ class TestTouchEncoderEdgeCases:
             embedding_dim=512
         )
 
-        touch_data = {
-            "positions": torch.randn(2, 10, 3),
-            "normals": torch.randn(2, 10, 3),
-            "forces": torch.zeros(2, 10, 3),  # No force
-            "contact_active": torch.ones(2, 10, dtype=torch.bool),
-        }
+        contact_active = torch.ones(2, 10, dtype=torch.bool)
+        contact_points = torch.randint(0, 10, (2, 10))
+        surface_types = torch.randint(0, 8, (2, 10))
+        contact_forces = torch.zeros(2, 10, 1)  # Zero force
+        contact_positions = torch.randn(2, 10, 3)
 
-        output = encoder(touch_data)
-        assert output["embeddings"].shape == (2, 10, 512)
-        assert not torch.isnan(output["embeddings"]).any()
-
-    def test_normalized_normals(self):
-        """
-        Purpose:
-            Test that normals are normalized correctly.
-            
-        Workflow:
-            1. Create inputs with unnormalized normals.
-            2. Run forward.
-            3. Verify no NaNs (normalization handled).
-            
-        ToDo:
-            - None
-        """
-        from src.encoders.touch_encoder import TouchEncoder
-        encoder = TouchEncoder(
-            max_contacts=10,
-            embedding_dim=512
+        output = encoder(
+            contact_active=contact_active,
+            contact_points=contact_points,
+            contact_forces=contact_forces,
+            contact_positions=contact_positions,
+            surface_types=surface_types
         )
-
-        # Create unnormalized normals
-        normals = torch.randn(2, 10, 3) * 10  # Large magnitude
-
-        touch_data = {
-            "positions": torch.randn(2, 10, 3),
-            "normals": normals,
-            "forces": torch.randn(2, 10, 3),
-            "contact_active": torch.ones(2, 10, dtype=torch.bool),
-        }
-
-        output = encoder(touch_data)
         assert output["embeddings"].shape == (2, 10, 512)
-        # Should handle without NaN
         assert not torch.isnan(output["embeddings"]).any()
+
+
 
 
 class TestEncoderOutputConsistency:
@@ -988,13 +980,20 @@ class TestEncoderOutputConsistency:
 
         # Touch
         encoder6 = TouchEncoder(embedding_dim=512)
-        touch_data = {
-            "positions": torch.randn(2, 10, 3),
-            "normals": torch.randn(2, 10, 3),
-            "forces": torch.randn(2, 10, 3),
-            "contact_active": torch.ones(2, 10, dtype=torch.bool),
-        }
-        output6 = encoder6(touch_data)
+        
+        contact_active = torch.ones(2, 10, dtype=torch.bool)
+        contact_points = torch.randint(0, 10, (2, 10))
+        surface_types = torch.randint(0, 8, (2, 10))
+        contact_forces = torch.randn(2, 10, 1)
+        contact_positions = torch.randn(2, 10, 3)
+
+        output6 = encoder6(
+            contact_active=contact_active,
+            contact_points=contact_points,
+            contact_forces=contact_forces,
+            contact_positions=contact_positions,
+            surface_types=surface_types
+        )
         assert "attention_mask" in output6
 
     def test_attention_mask_dtype_and_values(self):
