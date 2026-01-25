@@ -5,6 +5,7 @@ An autonomous AI creature that lives inside VR worlds, using a novel multi-modal
 ## Overview
 
 This project implements an AI creature with:
+
 - **Vision** through stereo eyes (left/right)
 - **Hearing** environmental sounds and speech
 - **Touch** sensations from VR world
@@ -69,8 +70,8 @@ multi-dimensional-ai/
 ## Implementation Phases
 
 1. ✅ **Planning** - Architecture design complete
-2. 🔄 **Foundation** (Weeks 1-4) - Basic structure and encoders
-3. ⏳ **Single-Modality** (Weeks 5-8) - Train individual components
+2. ✅ **Foundation** (Weeks 1-4) - Basic structure and encoders
+3. 🔄 **Single-Modality** (Weeks 5-8) - Train individual components
 4. ⏳ **Pairwise Integration** (Weeks 9-14) - Combine modalities
 5. ⏳ **Backpropagation** (Weeks 15-24) - Full model training
 6. ⏳ **Evolutionary** (Weeks 25-32) - Fitness-based optimization
@@ -86,6 +87,7 @@ multi-dimensional-ai/
 ## Documentation
 
 See `docs/` for detailed documentation:
+
 - [Architecture Guide](docs/architecture.md)
 - [Training Guide](docs/training_guide.md)
 - [Deployment Guide](docs/deployment_guide.md)
@@ -93,6 +95,7 @@ See `docs/` for detailed documentation:
 ## Citation
 
 If you use this work in your research, please cite:
+
 ```bibtex
 @software{multidimensional_ai_2026,
   title={Multi-Dimensional AI Creature: Autonomous Embodied Intelligence in VR},

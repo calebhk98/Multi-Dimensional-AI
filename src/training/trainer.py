@@ -87,14 +87,7 @@ class Trainer:
 		
 		# Forward pass returning hidden states for loss computation
 		outputs = self.model(
-			internal_voice_tokens=inputs.get("internal_voice_tokens"),
-			external_voice_tokens=inputs.get("external_voice_tokens"),
-			audio_waveform=inputs.get("audio_waveform"),
-			left_eye_image=inputs.get("left_eye_image"),
-			right_eye_image=inputs.get("right_eye_image"),
-			joint_positions=inputs.get("joint_positions"),
-			joint_rotations=inputs.get("joint_rotations"),
-			touch_data=inputs.get("touch_data"),
+			**inputs,
 			return_hidden_states=True
 		)
 		

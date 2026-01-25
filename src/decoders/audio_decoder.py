@@ -149,8 +149,13 @@ class AudioDecoder(nn.Module):
 		hidden_states = self.layer_norm(hidden_states)
 		logits = self.output_projection(hidden_states)
 		
-		logits_flat = logits.view(-1, self.codebook_size)
-		targets_flat = target_tokens.view(-1)
+		# Truncate to match length (handle potential mismatch from striding)
+		min_len = min(logits.shape[1], target_tokens.shape[1])
+		logits = logits[:, :min_len, :]
+		target_tokens = target_tokens[:, :min_len]
+
+		logits_flat = logits.reshape(-1, self.codebook_size)
+		targets_flat = target_tokens.reshape(-1)
 		
 		loss = F.cross_entropy(logits_flat, targets_flat, reduction='none')
 		
