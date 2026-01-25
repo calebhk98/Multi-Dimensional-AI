@@ -29,7 +29,6 @@ checkpoints/
 *.pth
 *.ckpt
 *.bin
-models/
 
 # Data & Logs
 data/
