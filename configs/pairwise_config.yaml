@@ -1,0 +1,74 @@
+# Configuration for Pairwise Integration (Phase 4)
+# Used by scripts/train.py
+
+defaults:
+    seed: 42
+    device: "cuda" # or "cpu"
+    save_dir: "checkpoints/pairwise"
+
+# Training hyperparams
+training:
+    max_steps: 5000
+    batch_size: 4
+    log_interval: 10
+    save_interval: 500
+    optimizer:
+        lr: 1.0e-4
+        weight_decay: 0.01
+
+# Model Architecture (Must match saved checkpoints if loading)
+model:
+    transformer:
+        num_layers: 4 # Reduced for dev
+        hidden_dim: 768
+        num_attention_heads: 12
+        ffn_dim: 3072
+        dropout: 0.1
+    fusion:
+        strategy: "concatenate"
+        modality_embeddings: true
+    encoders:
+        internal_voice:
+            vocab_size: 50257
+        audio:
+            sample_rate: 16000
+            num_conv_layers: 4
+            conv_channels: 256
+            codebook_size: 1024
+        vision:
+            image_size: 224
+            patch_size: 16
+        proprioception:
+            num_joints: 24
+            temporal_window: 10
+        touch:
+            num_contact_points: 10
+    decoders:
+        audio:
+            codebook_size: 1024
+        animation:
+            num_joints: 24
+
+# Phase 4 Specifics
+pairwise:
+    pairs:
+        # Define which pairs to train on
+        - ["vision", "external_text"] # Image Captioning
+        - ["external_text", "audio"] # Text to Speech
+        - ["audio", "external_text"] # Speech Recognition
+        - ["touch", "audio"] # Reaction to touch
+
+    # Dataset params
+    dataset:
+        vocab_size: 50257
+        sample_rate: 16000
+        image_size: 224
+        num_joints: 24
+        temporal_window: 10
+        codebook_size: 1024
+
+    loss_weights:
+        internal_text: 0.0 # Ignore unconnected modules
+        external_text: 1.0
+        audio: 1.0
+        animation: 0.0 # Unless training motion

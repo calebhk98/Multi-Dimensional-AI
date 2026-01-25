@@ -4,7 +4,7 @@ Token fusion module for combining multi-modal inputs.
 
 import torch
 import torch.nn as nn
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any, Tuple
 
 
 class TokenFusionModule(nn.Module):
@@ -110,7 +110,7 @@ class TokenFusionModule(nn.Module):
 	def forward(
 		self,
 		encoder_outputs: Dict[str, Dict[str, torch.Tensor]],
-	) -> Dict[str, torch.Tensor]:
+	) -> Dict[str, Any]:
 		"""
 		Fuse multi-modal tokens.
 		
@@ -124,12 +124,12 @@ class TokenFusionModule(nn.Module):
 			Dictionary with:
 				- embeddings: Fused embeddings [batch, total_seq_len, dim]
 				- attention_mask: Combined mask [batch, total_seq_len]
-				- modality_boundaries: List of (start, end) indices per modality
+				- modality_ranges: Dict of (start, end) indices per modality
 		"""
 		batch_size = None
 		all_embeddings = []
 		all_masks = []
-		modality_boundaries = []
+		modality_ranges = {}
 		current_pos = 0
 		
 		# Define order of modalities
@@ -166,7 +166,7 @@ class TokenFusionModule(nn.Module):
 			all_masks.append(mask)
 				
 			# Track boundaries
-			modality_boundaries.append((current_pos, current_pos + seq_len))
+			modality_ranges[modality_name] = (current_pos, current_pos + seq_len)
 			current_pos += seq_len
 		
 		# Concatenate along sequence dimension
@@ -212,25 +212,25 @@ class TokenFusionModule(nn.Module):
 		return {
 			"embeddings": fused_embeddings,
 			"attention_mask": fused_mask,
-			"modality_boundaries": modality_boundaries,
+			"modality_ranges": modality_ranges,
 		}
 	
 	def get_modality_tokens(
 		self,
 		fused_embeddings: torch.Tensor,
-		modality_boundaries: List[tuple],
-		modality_idx: int,
+		modality_ranges: Dict[str, Tuple[int, int]],
+		modality_name: str,
 	) -> torch.Tensor:
 		"""
 		Extract tokens for a specific modality from fused sequence.
 		
 		Args:
 			fused_embeddings: Fused embeddings [batch, seq_len, dim]
-			modality_boundaries: List of (start, end) tuples
-			modality_idx: Index of modality to extract
+			modality_ranges: Dict of (start, end) tuples
+			modality_name: Name of modality to extract
 			
 		Returns:
 			Modality tokens [batch, modality_seq_len, dim]
 		"""
-		start, end = modality_boundaries[modality_idx]
+		start, end = modality_ranges[modality_name]
 		return fused_embeddings[:, start:end, :]

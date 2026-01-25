@@ -274,6 +274,7 @@ class MultiModalCreature(nn.Module):
 		fusion_output = self.fusion_module(encoder_outputs)
 		fused_embeddings = fusion_output["embeddings"]
 		attention_mask = fusion_output["attention_mask"]
+		modality_ranges = fusion_output["modality_ranges"]
 		
 		# 3. Pass through transformer
 		hidden_states = self.transformer(
@@ -313,6 +314,7 @@ class MultiModalCreature(nn.Module):
 		
 		if return_hidden_states:
 			outputs["hidden_states"] = hidden_states
+			outputs["modality_ranges"] = modality_ranges
 		
 		return outputs
 	
@@ -342,33 +344,55 @@ class MultiModalCreature(nn.Module):
 			})
 		
 		hidden_states = outputs["hidden_states"]
+		# Safely get modality ranges, fallback to empty if generic forward/old code
+		modality_ranges = outputs.get("modality_ranges", {})
+		
 		losses = {}
 		
+		# Helper to get relevant hidden states
+		def get_modality_states(name: str):
+			if name in modality_ranges:
+				start, end = modality_ranges[name]
+				# Check bounds
+				if start < hidden_states.shape[1] and end <= hidden_states.shape[1]:
+					return hidden_states[:, start:end, :]
+			# Fallback: return full hidden states (legacy behavior or if no range found)
+			# WARNING: This might cause shape mismatches if not aligned
+			return hidden_states
+
 		# Internal text loss
 		if "internal_text" in targets:
+			# Maps to internal_voice inputs
+			states = get_modality_states("internal_voice")
 			losses["internal_text"] = self.internal_text_decoder.compute_loss(
-				hidden_states,
+				states,
 				targets["internal_text"]
 			)
 		
 		# External text loss
 		if "external_text" in targets:
+			# Maps to external_voice inputs
+			states = get_modality_states("external_voice")
 			losses["external_text"] = self.external_text_decoder.compute_loss(
-				hidden_states,
+				states,
 				targets["external_text"]
 			)
 		
 		# Audio loss
 		if "audio" in targets:
+			# Maps to audio inputs
+			states = get_modality_states("audio")
 			losses["audio"] = self.audio_decoder.compute_loss(
-				hidden_states,
+				states,
 				targets["audio"]
 			)
 		
 		# Animation loss
 		if "animation" in targets:
+			# Maps to proprioception inputs
+			states = get_modality_states("proprioception")
 			anim_loss, anim_loss_dict = self.animation_decoder.compute_loss(
-				hidden_states,
+				states,
 				targets["animation"]["rotations"],
 				targets["animation"]["blend_shapes"],
 				targets["animation"]["eye_params"],
