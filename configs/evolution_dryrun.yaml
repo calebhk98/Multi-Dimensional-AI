@@ -1,0 +1,35 @@
+# Evolution Training Configuration - Dry Run (Lightweight)
+# For testing on local laptop with limited resources
+
+# Model configuration - SMALL for testing
+model:
+    d_model: 64 # Much smaller than production
+    nhead: 4
+    num_layers: 2
+    dim_feedforward: 256
+
+# Evolution strategy
+strategy:
+    type: ga # GA is easier to debug than ES
+    pop_size: 10 # Small population for quick testing
+    mutation_rate: 0.2
+    mutation_power: 0.05
+    elite_ratio: 0.2
+
+# Fitness function
+fitness:
+    type: survival
+    timestep_reward: 1.0
+    failure_penalty: -50.0
+
+# Training parameters - MINIMAL for dry run
+num_generations: 5 # Just 5 generations for testing
+num_workers: 2 # Minimal parallelism
+max_steps: 50 # Very short episodes
+checkpoint_every: 2
+
+# Parameter target
+param_target: weights
+
+# Output
+final_checkpoint: checkpoints/evolution_dryrun.pt
