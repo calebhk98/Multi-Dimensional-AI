@@ -13,6 +13,12 @@ from src.training.trainer import Trainer
 
 @pytest.fixture
 def generator():
+    """
+    Fixture for SyntheticDataGenerator.
+
+    Returns:
+        SyntheticDataGenerator: Configured generator.
+    """
     return SyntheticDataGenerator(
         vocab_size=100,
         max_seq_length=20,
@@ -26,6 +32,12 @@ def generator():
 
 @pytest.fixture
 def model_config():
+    """
+    Fixture for model configuration.
+
+    Returns:
+        Dict: Configuration dictionary.
+    """
     # Miniature config for testing speed
     return {
         "model": {
@@ -71,7 +83,21 @@ def model_config():
     }
 
 def test_audio_training_step(generator, model_config):
-    """Test one training step for Audio through full brain."""
+    """
+    Purpose:
+        Test one training step for Audio through full brain.
+        Verifies that audio data flows through pipeline and produces valid loss.
+        
+    Workflow:
+        1. Initialize model and dataset (Modality: audio).
+        2. Create dataloader.
+        3. Initialize trainer (CPU).
+        4. Run train_step.
+        5. Verify loss > 0 and not NaN.
+        
+    ToDo:
+        - None
+    """
     model = MultiModalCreature(model_config)
     
     dataset = SyntheticDataset(generator, "audio", length=2)
@@ -86,7 +112,21 @@ def test_audio_training_step(generator, model_config):
     assert not torch.isnan(loss)
 
 def test_voice_training_step(generator, model_config):
-    """Test one training step for Voice (Internal) through full brain."""
+    """
+    Purpose:
+        Test one training step for Voice (Internal) through full brain.
+        Verifies that voice data flows through pipeline and produces valid loss.
+        
+    Workflow:
+        1. Initialize model and dataset (Modality: voice_internal).
+        2. Create dataloader.
+        3. Initialize trainer (CPU).
+        4. Run train_step.
+        5. Verify loss > 0.
+        
+    ToDo:
+        - None
+    """
     model = MultiModalCreature(model_config)
     
     dataset = SyntheticDataset(generator, "voice_internal", length=2)
@@ -101,7 +141,21 @@ def test_voice_training_step(generator, model_config):
     assert not torch.isnan(loss)
 
 def test_motion_training_step(generator, model_config):
-    """Test one training step for Motion through full brain."""
+    """
+    Purpose:
+        Test one training step for Motion through full brain.
+        Verifies that motion data flows through pipeline and produces valid loss.
+        
+    Workflow:
+        1. Initialize model and dataset (Modality: motion).
+        2. Create dataloader.
+        3. Initialize trainer (CPU).
+        4. Run train_step.
+        5. Verify loss > 0.
+        
+    ToDo:
+        - None
+    """
     model = MultiModalCreature(model_config)
     
     dataset = SyntheticDataset(generator, "motion", length=2)

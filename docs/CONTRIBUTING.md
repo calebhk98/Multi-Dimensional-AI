@@ -8,6 +8,12 @@ Repository: [https://github.com/calebhk98/Multi-Dimensional-AI](https://github.c
 
 Please adhere to the project's Code of Conduct in all interactions.
 
+## Getting Started
+
+1.  **Fork the Repository**: Create a fork of the project to your own GitHub account.
+2.  **Clone the Fork**: `git clone https://github.com/calebhk98/Multi-Dimensional-AI.git`
+3.  **Create a Branch**: `git checkout -b feature/your-feature-name`
+
 ## Coding Standards
 
 ### Indentation
@@ -105,9 +111,18 @@ class TensorCalculator:
     ```bash
     pytest tests/
     ```
+3.  **Code Style**:
+    - Follow PEP 8 guidelines.
+    - Add comments for complex logic.
+    - Ensure type hints are used where appropriate.
 
 ## Pull Requests
 
 1.  Push your branch to your fork.
 2.  Open a Pull Request (PR) against the `main` branch.
-3.  Ensure code follows all standards (Tabs, Comments, No Nesting).
+3.  Provide a clear description of your changes and link to any relevant issues.
+4.  Wait for review and address any feedback.
+
+## Reporting Issues
+
+If you find a bug or have a feature request, please open an issue on the GitHub repository with detailed reproduction steps or clear requirements.

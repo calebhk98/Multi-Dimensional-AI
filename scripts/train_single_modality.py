@@ -17,14 +17,37 @@ from src.data.synthetic_generator import SyntheticDataGenerator
 class SyntheticDataset(Dataset):
     """Simple wrapper to satisfy DataLoader interface for synthetic generator."""
     def __init__(self, generator: SyntheticDataGenerator, modality: str, length: int = 1000):
+        """
+        Initialize SyntheticDataset.
+
+        Args:
+            generator (SyntheticDataGenerator): Generator instance.
+            modality (str): Modality to generate data for.
+            length (int): Virtual length of the dataset.
+        """
         self.generator = generator
         self.modality = modality
         self.length = length
         
     def __len__(self):
+        """
+        Get dataset length.
+
+        Returns:
+            int: Virtual length of the dataset.
+        """
         return self.length
         
     def __getitem__(self, idx):
+        """
+        Generate a single sample.
+
+        Args:
+            idx (int): Index (unused for synthetic data).
+
+        Returns:
+            Dict[str, Any]: Dictionary containing inputs and targets.
+        """
         # Generate fresh sample every time
         sample = self.generator.generate_sample()
         inputs = sample["inputs"]
@@ -73,11 +96,24 @@ class SyntheticDataset(Dataset):
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
+    """
+    Load configuration from YAML file.
+
+    Args:
+        config_path (str): Path to the config file.
+
+    Returns:
+        Dict[str, Any]: Loaded configuration dictionary.
+    """
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
 
 def main():
+    """
+    Main entry point for single momentum training.
+    Parses arguments, sets up model and data, and runs training loop.
+    """
     parser = argparse.ArgumentParser(description="Train single modality components through the Brain")
     parser.add_argument("--modality", type=str, required=True, 
                         choices=["audio", "voice_internal", "voice_external", "motion"],

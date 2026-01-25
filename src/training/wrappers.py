@@ -23,7 +23,16 @@ class BaseAutoEncoder(nn.Module):
     """Base class for auto-encoders."""
     
     def compute_loss(self, outputs: Dict[str, Any], targets: Any) -> Tuple[torch.Tensor, Dict[str, float]]:
-        """Compute loss from outputs and targets."""
+        """
+        Compute loss from outputs and targets.
+
+        Args:
+            outputs (Dict[str, Any]): Dictionary of model outputs.
+            targets (Any): Target data for loss calculation.
+
+        Returns:
+            Tuple[torch.Tensor, Dict[str, float]]: Tuple containing (total_loss, loss_components_dict).
+        """
         raise NotImplementedError
 
 
@@ -33,6 +42,13 @@ class AudioAutoEncoder(BaseAutoEncoder):
     Goal: Reconstruct audio tokens/embeddings.
     """
     def __init__(self, encoder: AudioEncoder, decoder: AudioDecoder):
+        """
+        Initialize AudioAutoEncoder.
+
+        Args:
+            encoder (AudioEncoder): The audio encoder module.
+            decoder (AudioDecoder): The audio decoder module.
+        """
         super().__init__()
         self.encoder = encoder
         self.decoder = decoder
@@ -43,6 +59,17 @@ class AudioAutoEncoder(BaseAutoEncoder):
         return_hidden_states: bool = False,
         **kwargs
     ) -> Dict[str, torch.Tensor]:
+        """
+        Forward pass for audio reconstruction.
+
+        Args:
+            audio_waveform (torch.Tensor): Input audio waveform [batch, seq_len].
+            return_hidden_states (bool): Whether to return hidden states (default: False).
+            **kwargs: Additional arguments.
+
+        Returns:
+            Dict[str, torch.Tensor]: Dictionary containing 'encoder_outputs', 'decoder_outputs', and 'embeddings'.
+        """
         # Encode
         enc_out = self.encoder(audio_waveform, return_indices=True)
         embeddings = enc_out["embeddings"]
@@ -59,7 +86,14 @@ class AudioAutoEncoder(BaseAutoEncoder):
 
     def compute_loss(self, outputs: Dict[str, Any], targets: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, Dict[str, float]]:
         """
-        targets: Dict containing 'target' tokens [batch, seq_len]
+        Compute cross-entropy loss for audio reconstruction.
+
+        Args:
+            outputs (Dict[str, Any]): Outputs from forward pass, containing logits.
+            targets (Dict[str, torch.Tensor]): Dictionary containing 'target' tokens [batch, seq_len].
+
+        Returns:
+            Tuple[torch.Tensor, Dict[str, float]]: Total loss and loss dictionary.
         """
         target_tokens = targets["target"]
         
@@ -89,6 +123,13 @@ class VoiceAutoEncoder(BaseAutoEncoder):
     Goal: Reconstruct text (masked language modeling or causal output).
     """
     def __init__(self, encoder: nn.Module, decoder: nn.Module):
+        """
+        Initialize VoiceAutoEncoder.
+
+        Args:
+            encoder (nn.Module): Voice/Text encoder.
+            decoder (nn.Module): Text decoder.
+        """
         super().__init__()
         self.encoder = encoder
         self.decoder = decoder
@@ -98,6 +139,16 @@ class VoiceAutoEncoder(BaseAutoEncoder):
         input_ids: torch.Tensor,
         **kwargs
     ) -> Dict[str, torch.Tensor]:
+        """
+        Forward pass for text/voice reconstruction.
+
+        Args:
+            input_ids (torch.Tensor): Input token IDs [batch, seq_len].
+            **kwargs: Additional arguments.
+
+        Returns:
+            Dict[str, torch.Tensor]: Dictionary containing 'embeddings' and 'decoder_outputs'.
+        """
         
         enc_out = self.encoder(input_ids)
         embeddings = enc_out["embeddings"]
@@ -112,7 +163,14 @@ class VoiceAutoEncoder(BaseAutoEncoder):
     
     def compute_loss(self, outputs: Dict[str, Any], targets: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, Dict[str, float]]:
         """
-        targets: Dict containing 'target' tensor [batch, seq_len]
+        Compute cross-entropy loss for text reconstruction.
+
+        Args:
+            outputs (Dict[str, Any]): Outputs from forward pass.
+            targets (Dict[str, torch.Tensor]): Dict containing 'target' tensor [batch, seq_len].
+
+        Returns:
+            Tuple[torch.Tensor, Dict[str, float]]: Total loss and loss dictionary.
         """
         target_tokens = targets["target"]
         
@@ -142,6 +200,13 @@ class MotionAutoEncoder(BaseAutoEncoder):
     Goal: Reconstruct motion/pose.
     """
     def __init__(self, encoder: ProprioceptionEncoder, decoder: AnimationDecoder):
+        """
+        Initialize MotionAutoEncoder.
+
+        Args:
+            encoder (ProprioceptionEncoder): Proprioception encoder.
+            decoder (AnimationDecoder): Animation decoder.
+        """
         super().__init__()
         self.encoder = encoder
         self.decoder = decoder
@@ -152,6 +217,17 @@ class MotionAutoEncoder(BaseAutoEncoder):
         joint_rotations: torch.Tensor,
         **kwargs
     ) -> Dict[str, torch.Tensor]:
+        """
+        Forward pass for motion reconstruction.
+
+        Args:
+            joint_positions (torch.Tensor): Input joint positions.
+            joint_rotations (torch.Tensor): Input joint rotations.
+            **kwargs: Additional arguments.
+
+        Returns:
+            Dict[str, torch.Tensor]: Dictionary containing embeddings and decoded motion parameters.
+        """
         
         enc_out = self.encoder(joint_positions, joint_rotations)
         embeddings = enc_out["embeddings"]
@@ -167,7 +243,14 @@ class MotionAutoEncoder(BaseAutoEncoder):
     
     def compute_loss(self, outputs: Dict[str, Any], targets: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, Dict[str, float]]:
         """
-        targets: Dict with 'rotations', 'blend_shapes', 'eye_params'
+        Compute MSE loss for motion reconstruction (rotations, blend shapes, eyes).
+
+        Args:
+            outputs (Dict[str, Any]): Outputs from forward pass.
+            targets (Dict[str, torch.Tensor]): Dict with 'rotations', 'blend_shapes', 'eye_params'.
+
+        Returns:
+            Tuple[torch.Tensor, Dict[str, float]]: Total loss and loss dictionary.
         """
         # Targets
         target_rot = targets["rotations"]
