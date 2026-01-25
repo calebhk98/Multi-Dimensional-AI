@@ -84,6 +84,41 @@ multi-dimensional-ai/
 - **Software:** Python 3.10+, PyTorch 2.0+, Unity 2022+
 - **Storage:** 100GB+ for datasets and checkpoints
 
+### Single Modality Training
+
+When we say single modality, we are still running all of these through the same brain
+Like, it should be
+Input:
+Thoughts: Some internal text,
+Text: Some written text,
+Image: 1 or 2 images,
+...
+
+and
+Output:
+Thoughts: What it is thinking,
+Text: What it is writing,
+Voice: What it is saying aloud,
+...
+
+Like, even when running in single modality, the only difference is the other inputs or outputs are null. It should still generate a token for all of them every pass through.
+
+Example:
+Pass through 1:
+Text: What is capital of France?
+Thought: None
+Image: None
+etc.
+
+Output:
+Text: Paris
+Thought: It (later tokens would be "should be paris") or None (depending if we say thought are single modal or not)
+Audio: None
+etc.
+
+It still generates all tokens, even if it only has to do 1.
+IDK if we should train it to generate None as a token, or if we should just ignore the outputs here.
+
 ## Documentation
 
 See `docs/` for detailed documentation:
