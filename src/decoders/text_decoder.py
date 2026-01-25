@@ -115,6 +115,19 @@ class InternalTextDecoder(nn.Module):
 		
 		# Sample from distribution
 		probabilities = F.softmax(logits, dim=-1)
+		
+		# Ensure valid probabilities for multinomial
+		# 1. Replace NaN with 0
+		probabilities = torch.nan_to_num(probabilities, nan=0.0)
+		
+		# 2. Add epsilon to avoid all-zero rows if everything was masked (highly unlikely but possible)
+		# or if precision issues caused underflow
+		if (probabilities.sum(dim=-1) == 0).any():
+			# Fallback: uniform distribution for failed rows, or just force argmax behavior
+			# Let's add a tiny epsilon to all
+			probabilities = probabilities + 1e-8
+			probabilities = probabilities / probabilities.sum(dim=-1, keepdim=True)
+			
 		tokens = torch.multinomial(
 			probabilities.view(-1, self.vocab_size),
 			num_samples=1
@@ -268,6 +281,14 @@ class ExternalTextDecoder(nn.Module):
 		
 		# Sample
 		probabilities = F.softmax(logits, dim=-1)
+		
+		# Ensure valid probabilities
+		probabilities = torch.nan_to_num(probabilities, nan=0.0)
+		
+		if (probabilities.sum(dim=-1) == 0).any():
+			probabilities = probabilities + 1e-8
+			probabilities = probabilities / probabilities.sum(dim=-1, keepdim=True)
+
 		tokens = torch.multinomial(
 			probabilities.view(-1, self.vocab_size),
 			num_samples=1

@@ -38,12 +38,18 @@ def create_dataset(config: Dict[str, Any]):
 	
 	# Initialize Generator with safe defaults or config values
 	generator = SyntheticDataGenerator(
-		vocab_size=dataset_cfg.get("vocab_size", 50257),
+		vocab_size=dataset_cfg.get("vocab_size", 
+			config.get("model", {}).get("encoders", {}).get("internal_voice", {}).get("vocab_size", 50257)
+		),
 		sample_rate=dataset_cfg.get("sample_rate", 16000),
 		image_size=dataset_cfg.get("image_size", 224),
 		num_joints=dataset_cfg.get("num_joints", 24),
 		temporal_window=dataset_cfg.get("temporal_window", 10),
-		codebook_size=dataset_cfg.get("codebook_size", 1024)
+		codebook_size=dataset_cfg.get("codebook_size", 
+			config.get("model", {}).get("encoders", {}).get("audio", {}).get("codebook_size", 
+				config.get("model", {}).get("decoders", {}).get("audio", {}).get("codebook_size", 1024)
+			)
+		)
 	)
 	
 	# 2. Setup Dataset Wrapper

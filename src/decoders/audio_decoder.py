@@ -119,6 +119,14 @@ class AudioDecoder(nn.Module):
 		
 		# Sample
 		probabilities = F.softmax(logits, dim=-1)
+		
+		# Ensure valid probabilities
+		probabilities = torch.nan_to_num(probabilities, nan=0.0)
+		
+		if (probabilities.sum(dim=-1) == 0).any():
+			probabilities = probabilities + 1e-8
+			probabilities = probabilities / probabilities.sum(dim=-1, keepdim=True)
+
 		tokens = torch.multinomial(
 			probabilities.view(-1, self.codebook_size),
 			num_samples=1
