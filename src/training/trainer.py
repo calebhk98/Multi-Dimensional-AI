@@ -112,6 +112,32 @@ class Trainer:
 		
 		return loss, loss_dict
 
+	def _process_training_step(self, batch, step, progress_bar):
+		"""
+		Process a single training iteration including forward, backward, logging, and checkpointing.
+		
+		Args:
+			batch: Current batch of data
+			step: Current step number
+			progress_bar: tqdm progress bar for visualization
+			
+		Returns:
+			None
+		"""
+		loss, loss_dict = self.train_step(batch)
+		
+		# Logging - only log at specified intervals
+		if step % self.log_interval == 0:
+			loss_str = ", ".join([f"{k}: {v.item():.4f}" for k, v in loss_dict.items()])
+			progress_bar.set_description(f"Step {step} | Loss: {loss.item():.4f}")
+			# self.logger.info(f"Step {step}: {loss_str}") # Too verbose for tqdm
+		
+		# Save checkpoint at specified intervals (but not at step 0)
+		if step % self.save_interval == 0 and step > 0:
+			self.save_checkpoint(step)
+		
+		progress_bar.update(1)
+
 	def train(self):
 		"""Main training loop."""
 		self.model.train()
@@ -123,20 +149,8 @@ class Trainer:
 				if step >= self.max_steps:
 					break
 				
-				loss, loss_dict = self.train_step(batch)
-				
-				# Logging
-				if step % self.log_interval == 0:
-					loss_str = ", ".join([f"{k}: {v.item():.4f}" for k, v in loss_dict.items()])
-					progress_bar.set_description(f"Step {step} | Loss: {loss.item():.4f}")
-					# self.logger.info(f"Step {step}: {loss_str}") # Too verbose for tqdm
-				
-				# Save checkpoint
-				if step % self.save_interval == 0 and step > 0:
-					self.save_checkpoint(step)
-				
+				self._process_training_step(batch, step, progress_bar)
 				step += 1
-				progress_bar.update(1)
 				
 		progress_bar.close()
 		self.logger.info("Training complete.")
