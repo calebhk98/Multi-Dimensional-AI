@@ -1,3 +1,6 @@
+"""
+Evolution Manager for coordinating training.
+"""
 import torch
 import numpy as np
 from typing import List, Tuple, Optional

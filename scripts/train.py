@@ -17,7 +17,25 @@ from src.data.pairwise_dataset import PairwiseDataset, pairwise_collate_fn
 from src.data.multimodal_dataset import MultiModalDataset, multimodal_collate_fn
 
 def load_config(config_path: str) -> Dict[str, Any]:
-	"""Load configuration from YAML file."""
+	"""
+	Load configuration from YAML file.
+
+	Purpose:
+		Reads and parses YAML config file.
+
+	Workflow:
+		1. Open YAML file
+		2. Parse with safe_load
+
+	ToDo:
+		None
+
+	Args:
+		config_path: Path to YAML file.
+
+	Returns:
+		dict: Configuration dictionary.
+	"""
 	with open(config_path, "r") as f:
 		return yaml.safe_load(f)
 
@@ -25,6 +43,23 @@ def create_dataset(config: Dict[str, Any]):
 	"""
 	Create dataset based on configuration.
 	Currently defaults to Synthetic data generator.
+
+	Purpose:
+		Initializes appropriate dataset wrapper (Pairwise or MultiModal).
+
+	Workflow:
+		1. Create SyntheticDataGenerator
+		2. Determine dataset type from config
+		3. Return appropriate dataset wrapper
+
+	ToDo:
+		None
+
+	Args:
+		config: Full configuration dictionary.
+
+	Returns:
+		Dataset: PairwiseDataset or MultiModalDataset instance.
 	"""
 	# 1. Setup Generator
 	# Check if 'pairwise' or 'single_modality' specific configs exist, else use defaults
@@ -82,6 +117,10 @@ def create_dataset(config: Dict[str, Any]):
 		return MultiModalDataset(generator, length=virtual_length)
 
 def main():
+	"""
+	Main training entry point.
+	Parses arguments, loads config, and starts training loop.
+	"""
 	parser = argparse.ArgumentParser(description="Multi-Dimensional AI Creature Training")
 	parser.add_argument("--config", type=str, required=True, help="Path to configuration file")
 	parser.add_argument("--dry-run", action="store_true", help="Run a short training loop for verification")

@@ -1,3 +1,6 @@
+"""
+Fitness calculation module for evolution strategies.
+"""
 import numpy as np
 from typing import Any, Dict
 import torch
@@ -38,6 +41,21 @@ class SurvivalFitness(FitnessEvaluator):
 		Count timesteps survived, penalize for catastrophic failures.
 	"""
 	def __init__(self, timestep_reward: float = 1.0, failure_penalty: float = -100.0):
+		"""
+		Purpose:
+			Initialize survival fitness evaluator with reward parameters.
+
+		Workflow:
+			1. Store timestep reward value
+			2. Store failure penalty value
+
+		ToDo:
+			None
+
+		Args:
+			timestep_reward: Reward per timestep survived.
+			failure_penalty: Penalty for catastrophic failure.
+		"""
 		self.timestep_reward = timestep_reward
 		self.failure_penalty = failure_penalty
 	
@@ -72,6 +90,21 @@ class TaskCompletionFitness(FitnessEvaluator):
 		Check env_state for task completion flags and partial progress.
 	"""
 	def __init__(self, completion_reward: float = 100.0, progress_weight: float = 0.5):
+		"""
+		Purpose:
+			Initialize task completion fitness evaluator.
+
+		Workflow:
+			1. Store completion reward
+			2. Store progress weight
+
+		ToDo:
+			None
+
+		Args:
+			completion_reward: Reward for completing task.
+			progress_weight: Weight for partial progress.
+		"""
 		self.completion_reward = completion_reward
 		self.progress_weight = progress_weight
 	

@@ -1,3 +1,6 @@
+"""
+Evolution Worker for evaluating seeds.
+"""
 import torch
 import numpy as np
 from typing import Dict, Any, Optional

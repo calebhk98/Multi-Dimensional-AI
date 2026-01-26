@@ -4,7 +4,8 @@ Script to audit codebase for missing documentation.
 """
 import ast
 import os
-import json
+import argparse
+import sys
 
 def check_file(filepath):
     """
@@ -200,24 +201,60 @@ def main():
         Run directly: `python scripts/audit_docs.py`
     ==============================================================================
     """
-    report = {}
-    # Scan specific directories and root files
-    walk_dirs = ["src", "scripts", "tests"]
-    
-    # 1. Walk directories
-    for start_dir in walk_dirs:
-        _scan_directory(start_dir, report)
-
-    # 2. Check root files
-    for file in os.listdir("."):
-        if not os.path.isfile(file) or not file.endswith(".py"):
-            continue
-            
-        result = check_file(file)
-        if result["file_header"] or result["functions"]:
-            report[file] = result
-
     print(json.dumps(report, indent=2))
+
+def print_simple_report(report):
+    """
+    Print report in a simple line-by-line format easier for agents/grep to parse.
+    Format: relative_path:lineno:function_name: reason
+
+    Args:
+        report: Dictionary containing audit results.
+    """
+    for filepath, data in report.items():
+        if "functions" in data:
+            for func in data["functions"]:
+                print(f"{filepath}:{func['lineno']}:{func['name']}: {func['reason']}")
+        if data.get("file_header"):
+            print(f"{filepath}:1:module_header: Missing file header docstring")
+
+def main():
+    """
+    Main entry point. Supports CLI args for targeting specific paths.
+    """
+    parser = argparse.ArgumentParser(description="Audit codebase for documentation.")
+    parser.add_argument("paths", nargs="*", help="Specific files or directories to scan. Defaults to standard dirs.")
+    parser.add_argument("--json", action="store_true", help="Output in JSON format (default is line-by-line).")
+    args = parser.parse_args()
+
+    report = {}
+    
+    # Determine paths to scan
+    if args.paths:
+        search_paths = args.paths
+    else:
+        search_paths = ["src", "scripts", "tests"]
+
+    for path in search_paths:
+        if os.path.isfile(path) and path.endswith(".py"):
+            result = check_file(path)
+            if result["file_header"] or result["functions"]:
+                 report[path] = result
+        elif os.path.isdir(path):
+             _scan_directory(path, report)
+    
+    # If no paths args provided, also check root py files (legacy behavior)
+    if not args.paths:
+        for file in os.listdir("."):
+            if os.path.isfile(file) and file.endswith(".py"):
+                result = check_file(file)
+                if result["file_header"] or result["functions"]:
+                    report[file] = result
+
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        print_simple_report(report)
 
 def _scan_directory(start_dir, report):
     """

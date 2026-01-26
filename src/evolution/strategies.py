@@ -1,3 +1,6 @@
+"""
+Evolution Strategies implementation (OpenAI ES, Simple GA).
+"""
 import numpy as np
 import torch
 from abc import ABC, abstractmethod
@@ -147,8 +150,34 @@ class OpenAIES(EvolutionStrategy):
 		return current_params + step
 		
 	# Stub methods to satisfy ABC if needed, though we use specific flows
-	def ask(self): pass
-	def tell(self, results): pass
+	def ask(self):
+		"""
+		Purpose:
+			Stub method (unused - use perturb directly).
+
+		Workflow:
+			1. No-op
+
+		ToDo:
+			None
+		"""
+		pass
+
+	def tell(self, results):
+		"""
+		Purpose:
+			Stub method (unused - use update directly).
+
+		Workflow:
+			1. No-op
+
+		ToDo:
+			None
+
+		Args:
+			results: Results (unused).
+		"""
+		pass
 
 class SimpleGA(EvolutionStrategy):
 	"""
@@ -239,5 +268,28 @@ class SimpleGA(EvolutionStrategy):
 		noise = np.random.randn(*genome.shape) * self.mutation_power
 		return genome + mask * noise
 
-	def ask(self): pass
-	def tell(self): pass
+	def ask(self):
+		"""
+		Purpose:
+			Stub method (unused - use evolve directly).
+
+		Workflow:
+			1. No-op
+
+		ToDo:
+			None
+		"""
+		pass
+
+	def tell(self):
+		"""
+		Purpose:
+			Stub method (unused - use evolve directly).
+
+		Workflow:
+			1. No-op
+
+		ToDo:
+			None
+		"""
+		pass

@@ -351,6 +351,23 @@ class MultiModalCreature(nn.Module):
 		
 		# Helper to get relevant hidden states
 		def get_modality_states(name: str):
+			"""
+			Purpose:
+				Extract hidden states for a specific modality.
+
+			Workflow:
+				1. Check if modality range exists
+				2. Slice hidden states or return full states
+
+			ToDo:
+				None
+
+			Args:
+				name: Modality name.
+
+			Returns:
+				torch.Tensor: Hidden states for modality.
+			"""
 			if name in modality_ranges:
 				start, end = modality_ranges[name]
 				# Check bounds

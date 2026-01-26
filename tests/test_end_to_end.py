@@ -158,10 +158,40 @@ class TestTrainingWorkflow:
             "internal_text": torch.randint(0, 100, (10,)),
         }
         
-        # Create a simpler dataset wrapper that yields dicts
         class DictDataset(torch.utils.data.Dataset):
-            def __len__(self): return 10
-            def __getitem__(self, idx): return {"inputs": single_inputs, "targets": single_targets}
+            def __len__(self):
+                """
+                Purpose:
+                    Get dataset length.
+
+                Workflow:
+                    1. Return constant length.
+                
+                ToDo:
+                    None
+
+                Returns:
+                    int: Dataset length.
+                """
+                return 10
+            def __getitem__(self, idx):
+                """
+                Purpose:
+                    Get dataset item.
+
+                Workflow:
+                    1. Return mock sample.
+                
+                ToDo:
+                    None
+
+                Args:
+                    idx: Item index.
+
+                Returns:
+                    dict: Sample data.
+                """
+                return {"inputs": single_inputs, "targets": single_targets}
 
         dataset = DictDataset()
         loader = DataLoader(dataset, batch_size=2)
@@ -223,8 +253,38 @@ class TestTrainingWorkflow:
         
         # Mock Data
         class DictDataset(torch.utils.data.Dataset):
-            def __len__(self): return 4
+            def __len__(self):
+                """
+                Purpose:
+                    Get dataset length.
+
+                Workflow:
+                    1. Return constant length.
+                
+                ToDo:
+                    None
+
+                Returns:
+                    int: Dataset length.
+                """
+                return 4
             def __getitem__(self, idx): 
+                """
+                Purpose:
+                    Get dataset item.
+
+                Workflow:
+                    1. Return mock sample.
+                
+                ToDo:
+                    None
+
+                Args:
+                    idx: Item index.
+
+                Returns:
+                    dict: Sample data.
+                """
                 return {
                     "inputs": {"internal_voice_tokens": torch.randint(0, 100, (5,))},
                     "targets": {"internal_text": torch.randint(0, 100, (5,))}
@@ -463,8 +523,33 @@ class TestModelCheckpointing:
         
         # Mock objects
         class MockModel(torch.nn.Module):
-            def __init__(self): super().__init__()
-            def forward(self, **kwargs): return {}
+            def __init__(self):
+                """
+                Purpose:
+                    Initialize mock model.
+
+                Workflow:
+                    1. Call super init.
+                
+                ToDo:
+                    None
+                """
+                super().__init__()
+            def forward(self, **kwargs):
+                """
+                Purpose:
+                    Mock forward pass.
+
+                Workflow:
+                    1. Return empty dict.
+                
+                ToDo:
+                    None
+
+                Returns:
+                    dict: Empty output.
+                """
+                return {}
         
         model = MockModel()
         trainer = Trainer(model, config, None, device="cpu")

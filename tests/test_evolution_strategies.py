@@ -1,3 +1,6 @@
+"""
+Tests for Evolution Strategies (ES) and Genetic Algorithms (GA).
+"""
 
 import pytest
 import torch
@@ -11,6 +14,17 @@ class MockModel(torch.nn.Module):
 	def __init__(self):
 		"""
 		Initialize mock model with fixed weights.
+
+		Purpose:
+			Setup deterministic model for testing strategies.
+
+		Workflow:
+			1. Create linear layer
+			2. Fix weights to 1.0
+			3. Fix biases to 0.0
+
+		ToDo:
+			None
 		"""
 		super().__init__()
 		self.layer = torch.nn.Linear(2, 2)
@@ -18,6 +32,27 @@ class MockModel(torch.nn.Module):
 		with torch.no_grad():
 			self.layer.weight.fill_(1.0)
 			self.layer.bias.fill_(0.0)
+
+	def forward(self, x):
+		"""
+		Forward pass.
+
+		Purpose:
+			Compute model output.
+
+		Workflow:
+			1. Pass input through linear layer
+
+		ToDo:
+			None
+
+		Args:
+			x: Input tensor.
+
+		Returns:
+			torch.Tensor: Output tensor.
+		"""
+		return self.layer(x)
 
 def test_parameter_proxy_full_weights():
 	"""

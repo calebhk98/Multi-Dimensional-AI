@@ -17,7 +17,12 @@ class TestStage5Training:
 
 	@pytest.fixture
 	def config(self):
-		"""Create a minimal config for testing."""
+		"""
+		Create a minimal config for testing.
+		
+		Returns:
+			dict: Configuration dictionary.
+		"""
 		return {
 			"model": {
 				"encoders": {
@@ -58,7 +63,12 @@ class TestStage5Training:
 
 	@pytest.fixture
 	def generator(self):
-		"""Create a generator with small dimensions for speed."""
+		"""
+		Create a generator with small dimensions for speed.
+		
+		Returns:
+			SyntheticDataGenerator: Generator instance.
+		"""
 		return SyntheticDataGenerator(
 			vocab_size=100,
 			image_size=32,
@@ -67,7 +77,21 @@ class TestStage5Training:
 		)
 
 	def test_dataset_instantiation(self, generator):
-		"""Test that MultiModalDataset can be instantiated."""
+		"""
+		Test that MultiModalDataset can be instantiated.
+
+		Purpose:
+			Verify dataset creation and sample structure.
+
+		Workflow:
+			1. Create dataset
+			2. Check length
+			3. check generic keys (inputs/targets)
+			4. Check specific nested keys
+
+		ToDo:
+			None
+		"""
 		dataset = MultiModalDataset(generator, length=10)
 		assert len(dataset) == 10
 		
@@ -83,7 +107,21 @@ class TestStage5Training:
 		assert "internal_text" in sample["targets"]
 
 	def test_dataloader_collation(self, generator):
-		"""Test that DataLoader correctly batches samples using collate_fn."""
+		"""
+		Test that DataLoader correctly batches samples using collate_fn.
+
+		Purpose:
+			Verify data loader aggregation and batch dimensions.
+
+		Workflow:
+			1. Create dataset and loader
+			2. Fetch one batch
+			3. Check input tensor dimensions
+			4. Check target tensor dimensions
+
+		ToDo:
+			None
+		"""
 		dataset = MultiModalDataset(generator, length=10)
 		loader = DataLoader(
 			dataset, 
@@ -107,7 +145,22 @@ class TestStage5Training:
 		assert batch["targets"]["animation"]["rotations"].shape[0] == 2
 
 	def test_training_step(self, config, generator):
-		"""Test a full forward/backward pass with the model."""
+		"""
+		Test a full forward/backward pass with the model.
+
+		Purpose:
+			Verify complete training loop integration (forward, loss, backward).
+
+		Workflow:
+			1. Setup Model & Data
+			2. Forward pass (simulate trainer unpacking)
+			3. Compute Loss
+			4. Backward pass
+			5. Verify loss values and gradients
+
+		ToDo:
+			None
+		"""
 		# 1. Setup Model
 		model = MultiModalCreature(config)
 		

@@ -18,6 +18,18 @@ from src.training.trainer import Trainer
 def generator():
     """
     Fixture for SyntheticDataGenerator.
+
+    Purpose:
+        Provides test generator instance.
+
+    Workflow:
+        1. Create generator with small params
+
+    ToDo:
+        None
+
+    Returns:
+        SyntheticDataGenerator: Generator instance.
     """
     return SyntheticDataGenerator(
         vocab_size=100,
@@ -32,6 +44,18 @@ def generator():
 def model_config():
     """
     Fixture for model configuration.
+
+    Purpose:
+        Provides minimal model config for testing.
+
+    Workflow:
+        1. Return config dict
+
+    ToDo:
+        None
+
+    Returns:
+        dict: Model configuration dictionary.
     """
     return {
         "model": {
@@ -86,6 +110,9 @@ def test_pairwise_dataset_vision_to_text(generator):
         3. assert inputs has 'left_eye_image', 'right_eye_image'
         4. assert inputs does NOT have 'audio', etc.
         5. assert targets has 'external_text'
+
+    ToDo:
+        None
     """
     dataset = PairwiseDataset(
         generator=generator,
@@ -107,6 +134,13 @@ def test_pairwise_dataset_mixed(generator):
     """
     Purpose:
         Verify PairwiseDataset correctly handles multiple pairs in list.
+
+    Workflow:
+        1. Create dataset with two pairs
+        2. Verify items have valid structure
+
+    ToDo:
+        None
     """
     dataset = PairwiseDataset(
         generator=generator,
@@ -123,6 +157,14 @@ def test_vision_to_text_training_step(generator, model_config):
     """
     Purpose:
         Test one training step for Vision -> Text pair.
+
+    Workflow:
+        1. Create model and dataset
+        2. Run one training step
+        3. Verify loss is valid
+
+    ToDo:
+        None
     """
     model = MultiModalCreature(model_config)
     
@@ -148,6 +190,14 @@ def test_text_to_speech_training_step(generator, model_config):
     """
     Purpose:
         Test one training step for Text (External) -> Speech (Audio) pair.
+
+    Workflow:
+        1. Create model and dataset
+        2. Run training step
+        3. Verify loss is positive and not NaN
+
+    ToDo:
+        None
     """
     model = MultiModalCreature(model_config)
     
