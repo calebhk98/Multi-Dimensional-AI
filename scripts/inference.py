@@ -315,7 +315,7 @@ class InferenceServer:
 			# Run model inference
 			try:
 				with torch.no_grad():
-					model_outputs = self.model(processed_inputs)
+					model_outputs = self.model(**processed_inputs)
 			except Exception as e:
 				logger.error(f"Model inference failed: {e}")
 				model_outputs = {}
