@@ -24,6 +24,10 @@ import asyncio
 import logging
 from typing import Callable, Optional, Any
 from dataclasses import dataclass
+from typing import Callable, Optional, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.vr_integration.recorder import VRRecorder
 
 from src.vr_integration.protocol import (
 	VRInputMessage,
@@ -70,13 +74,16 @@ class VRServer:
 	Args:
 		config: Server configuration.
 		message_handler: Callback function to process incoming messages.
+		message_handler: Callback function to process incoming messages.
 			Signature: (VRInputMessage) -> VROutputMessage
+		recorder: Optional VRRecorder instance for capturing session data.
 	"""
 
 	def __init__(
 		self,
 		config: Optional[VRServerConfig] = None,
 		message_handler: Optional[Callable[[VRInputMessage], VROutputMessage]] = None,
+		recorder: Optional["VRRecorder"] = None,
 	):
 		"""
 		Initialize VR server.
@@ -84,9 +91,11 @@ class VRServer:
 		Args:
 			config: Server configuration (uses defaults if None).
 			message_handler: Callback for processing messages.
+			recorder: recorder instance.
 		"""
 		self.config = config or VRServerConfig()
 		self.message_handler = message_handler
+		self.recorder = recorder
 		self._socket: Optional[socket.socket] = None
 		self._client_socket: Optional[socket.socket] = None
 		self._running = False
@@ -235,7 +244,13 @@ class VRServer:
 			message_data = remaining[:msg_length]
 			self._receive_buffer = remaining[msg_length:]
 
-			return VRInputMessage.from_json(message_data.decode('utf-8'))
+			message = VRInputMessage.from_json(message_data.decode('utf-8'))
+			
+			# Record validation hook
+			if self.recorder:
+				self.recorder.record_frame(message)
+				
+			return message
 
 		except socket.timeout:
 			return None

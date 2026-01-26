@@ -133,32 +133,41 @@ class VRInputProcessor:
 		if not image_b64:
 			return None
 
+		# Decode base64 to bytes
 		try:
-			# Decode base64 to bytes
 			image_bytes = base64.b64decode(image_b64)
-
-			# Try to use PIL if available, otherwise create placeholder
-			try:
-				from PIL import Image
-				import torchvision.transforms as T
-
-				image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-				transform = T.Compose([
-					T.Resize((self.config.image_size, self.config.image_size)),
-					T.ToTensor(),
-				])
-				tensor = transform(image).unsqueeze(0)
-				return tensor.to(self.config.device)
-			except ImportError:
-				logger.warning("PIL/torchvision not available, using placeholder")
-				return torch.zeros(
-					1, 3, self.config.image_size, self.config.image_size,
-					device=self.config.device
-				)
-
+		except Exception as e:
+			logger.error(f"Failed to base64 decode vision data: {e}")
+			return None
+			
+		# Decode bytes to tensor
+		# Note: _decode_image_with_pil handles its own ImportError fallback,
+		# but might raise other image decoding errors which we want to catch here.
+		try:
+			return self._decode_image_with_pil(image_bytes)
 		except Exception as e:
 			logger.error(f"Failed to process vision data: {e}")
 			return None
+
+	def _decode_image_with_pil(self, image_bytes: bytes) -> torch.Tensor:
+		"""Helper to decode image bytes using PIL."""
+		try:
+			from PIL import Image
+			import torchvision.transforms as T
+
+			image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+			transform = T.Compose([
+				T.Resize((self.config.image_size, self.config.image_size)),
+				T.ToTensor(),
+			])
+			tensor = transform(image).unsqueeze(0)
+			return tensor.to(self.config.device)
+		except ImportError:
+			logger.warning("PIL/torchvision not available, using placeholder")
+			return torch.zeros(
+				1, 3, self.config.image_size, self.config.image_size,
+				device=self.config.device
+			)
 
 	def _process_audio(self, samples: list) -> Optional[torch.Tensor]:
 		"""

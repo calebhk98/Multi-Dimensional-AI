@@ -70,3 +70,11 @@ __pycache__/
 *.svd
 *.pdb
 *.opendb
+
+# Test outputs & debug files
+*_test_output.txt
+*_debug.txt
+run_tests.py
+manual_test.py
+debug_import.py
+profiler_output/

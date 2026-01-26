@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from typing import Dict, Optional, Any, List, Tuple
+from typing import Dict, Optional, Any, List, Tuple, Union
 import logging
 from tqdm import tqdm
 from pathlib import Path
@@ -166,3 +166,29 @@ class Trainer:
 			'config': self.config,
 		}, path)
 		self.logger.info(f"Saved checkpoint to {path}")
+
+	def load_checkpoint(self, checkpoint_path: Union[str, Path]) -> Dict[str, Any]:
+		"""
+		Load a checkpoint and restore model/optimizer state.
+
+		Args:
+			checkpoint_path: Path to the .pt file.
+
+		Returns:
+			Dict containing the loaded checkpoint data (step, config, etc).
+		"""
+		path = Path(checkpoint_path)
+		if not path.exists():
+			raise FileNotFoundError(f"Checkpoint not found at {path}")
+
+		checkpoint = torch.load(path, map_location=self.device)
+		
+		# Restore model
+		self.model.load_state_dict(checkpoint['model_state_dict'])
+		
+		# Restore optimizer
+		self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+		
+		self.logger.info(f"Loaded checkpoint from {path} (Step {checkpoint.get('step', 'unknown')})")
+		
+		return checkpoint

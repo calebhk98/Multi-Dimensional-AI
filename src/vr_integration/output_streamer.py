@@ -134,16 +134,16 @@ class VROutputStreamer:
 		if audio_output is None:
 			return []
 
-		try:
-			# Assume audio_output is [batch, seq] of token IDs
-			if isinstance(audio_output, torch.Tensor):
-				# Take first batch, convert to list
-				tokens = audio_output[0].detach().cpu().tolist()
-				# Handle nested lists
-				if isinstance(tokens, list) and tokens and isinstance(tokens[0], list):
-					tokens = tokens[0]
-				return [int(t) for t in tokens]
+		if not isinstance(audio_output, torch.Tensor):
 			return []
+
+		try:
+			# Take first batch, convert to list
+			tokens = audio_output[0].detach().cpu().tolist()
+			# Handle nested lists
+			if isinstance(tokens, list) and tokens and isinstance(tokens[0], list):
+				tokens = tokens[0]
+			return [int(t) for t in tokens]
 
 		except Exception as e:
 			logger.error(f"Failed to extract vocalization: {e}")
@@ -175,22 +175,23 @@ class VROutputStreamer:
 		if joint_rotations is None:
 			return []
 
-		try:
-			if isinstance(joint_rotations, torch.Tensor):
-				# Take first batch, last timestep
-				rotations = joint_rotations[0, -1].detach().cpu()
-				result = []
-				for i in range(min(rotations.shape[0], self.config.num_joints)):
-					q = rotations[i]
-					result.append({
-						"joint_id": i,
-						"x": float(q[0]),
-						"y": float(q[1]),
-						"z": float(q[2]),
-						"w": float(q[3]),
-					})
-				return result
+		if not isinstance(joint_rotations, torch.Tensor):
 			return []
+
+		try:
+			# Take first batch, last timestep
+			rotations = joint_rotations[0, -1].detach().cpu()
+			result = []
+			for i in range(min(rotations.shape[0], self.config.num_joints)):
+				q = rotations[i]
+				result.append({
+					"joint_id": i,
+					"x": float(q[0]),
+					"y": float(q[1]),
+					"z": float(q[2]),
+					"w": float(q[3]),
+				})
+			return result
 
 		except Exception as e:
 			logger.error(f"Failed to extract joint rotations: {e}")
@@ -221,18 +222,19 @@ class VROutputStreamer:
 		if blend_shapes is None:
 			return []
 
-		try:
-			if isinstance(blend_shapes, torch.Tensor):
-				# Take first batch, last timestep
-				shapes = blend_shapes[0, -1].detach().cpu()
-				result = []
-				for i in range(min(shapes.shape[0], self.config.num_blend_shapes)):
-					result.append({
-						"shape_id": i,
-						"weight": float(shapes[i]),
-					})
-				return result
+		if not isinstance(blend_shapes, torch.Tensor):
 			return []
+
+		try:
+			# Take first batch, last timestep
+			shapes = blend_shapes[0, -1].detach().cpu()
+			result = []
+			for i in range(min(shapes.shape[0], self.config.num_blend_shapes)):
+				result.append({
+					"shape_id": i,
+					"weight": float(shapes[i]),
+				})
+			return result
 
 		except Exception as e:
 			logger.error(f"Failed to extract blend shapes: {e}")
@@ -264,21 +266,22 @@ class VROutputStreamer:
 		if eye_params is None:
 			return {}
 
-		try:
-			if isinstance(eye_params, torch.Tensor):
-				# Take first batch, last timestep
-				params = eye_params[0, -1].detach().cpu()
-				return {
-					"left_horizontal": float(params[0]) if len(params) > 0 else 0.0,
-					"left_vertical": float(params[1]) if len(params) > 1 else 0.0,
-					"right_horizontal": float(params[2]) if len(params) > 2 else 0.0,
-					"right_vertical": float(params[3]) if len(params) > 3 else 0.0,
-					"left_blink": float(params[4]) if len(params) > 4 else 0.0,
-					"right_blink": float(params[5]) if len(params) > 5 else 0.0,
-					"left_pupil": float(params[6]) if len(params) > 6 else 0.5,
-					"right_pupil": float(params[7]) if len(params) > 7 else 0.5,
-				}
+		if not isinstance(eye_params, torch.Tensor):
 			return {}
+
+		try:
+			# Take first batch, last timestep
+			params = eye_params[0, -1].detach().cpu()
+			return {
+				"left_horizontal": float(params[0]) if len(params) > 0 else 0.0,
+				"left_vertical": float(params[1]) if len(params) > 1 else 0.0,
+				"right_horizontal": float(params[2]) if len(params) > 2 else 0.0,
+				"right_vertical": float(params[3]) if len(params) > 3 else 0.0,
+				"left_blink": float(params[4]) if len(params) > 4 else 0.0,
+				"right_blink": float(params[5]) if len(params) > 5 else 0.0,
+				"left_pupil": float(params[6]) if len(params) > 6 else 0.5,
+				"right_pupil": float(params[7]) if len(params) > 7 else 0.5,
+			}
 
 		except Exception as e:
 			logger.error(f"Failed to extract eye params: {e}")

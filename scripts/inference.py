@@ -214,13 +214,17 @@ class InferenceServer:
 			logger.info("Running in dry-run mode without model")
 			return None
 
+		return self._load_checkpoint_file(checkpoint_path)
+
+	def _load_checkpoint_file(self, checkpoint_path: Path) -> Optional[torch.nn.Module]:
+		"""Helper to load model from file."""
+		device = self.config.get("inference", {}).get("device", "cpu")
+		logger.info(f"Loading model from {checkpoint_path}")
+
+		# Import model class (lazy import to avoid circular dependencies if any)
+		from src.models.multimodal_transformer import MultiModalCreature
+
 		try:
-			device = self.config.get("inference", {}).get("device", "cpu")
-			logger.info(f"Loading model from {checkpoint_path}")
-
-			# Import model class
-			from src.models.multimodal_transformer import MultiModalCreature
-
 			# Load checkpoint
 			checkpoint = torch.load(checkpoint_path, map_location=device)
 

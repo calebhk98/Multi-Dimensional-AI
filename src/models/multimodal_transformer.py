@@ -356,8 +356,9 @@ class MultiModalCreature(nn.Module):
 				Extract hidden states for a specific modality.
 
 			Workflow:
-				1. Check if modality range exists
-				2. Slice hidden states or return full states
+				1. Check if modality range exists (return full if not)
+				2. Check bounds (return full if invalid)
+				3. Return sliced hidden states
 
 			ToDo:
 				None
@@ -368,14 +369,16 @@ class MultiModalCreature(nn.Module):
 			Returns:
 				torch.Tensor: Hidden states for modality.
 			"""
-			if name in modality_ranges:
-				start, end = modality_ranges[name]
-				# Check bounds
-				if start < hidden_states.shape[1] and end <= hidden_states.shape[1]:
-					return hidden_states[:, start:end, :]
-			# Fallback: return full hidden states (legacy behavior or if no range found)
-			# WARNING: This might cause shape mismatches if not aligned
-			return hidden_states
+			if name not in modality_ranges:
+				return hidden_states
+
+			start, end = modality_ranges[name]
+
+			# Check bounds - if invalid, fallback to full states
+			if start >= hidden_states.shape[1] or end > hidden_states.shape[1]:
+				return hidden_states
+
+			return hidden_states[:, start:end, :]
 
 		# Internal text loss
 		if "internal_text" in targets:

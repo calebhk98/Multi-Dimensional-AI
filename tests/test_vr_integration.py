@@ -494,45 +494,10 @@ class TestVRServer:
 		received_response = []
 
 		try:
-			def client_task():
-				"""
-				Purpose:
-					Mock VR client for testing message exchange.
-
-				Workflow:
-					1. Connect to server
-					2. Send test message
-					3. Receive and store response
-
-				ToDo:
-					None
-				"""
-				time.sleep(0.1)
-				client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				client.settimeout(2.0)
-				client.connect(('localhost', free_port))
-
-				# Send message
-				msg = VRInputMessage(timestamp=1000.0)
-				data = msg.to_json().encode('utf-8')
-				framed = frame_message(data)
-				client.sendall(framed)
-
-				# Receive response
-				response_data = client.recv(65536)
-				if not response_data:
-					client.close()
-					continue
-
-				length, content = unframe_message(response_data)
-				if length > 0:
-					response_json = content[:length].decode('utf-8')
-					received_response.append(
-						VROutputMessage.from_json(response_json)
-					)
-				client.close()
-
-			thread = threading.Thread(target=client_task)
+			thread = threading.Thread(
+				target=self._run_client_exchange_task,
+				args=(free_port, received_response)
+			)
 			thread.start()
 
 			# Server side
@@ -548,6 +513,41 @@ class TestVRServer:
 
 		finally:
 			server.stop()
+
+	def _run_client_exchange_task(self, port: int, result_list: list):
+		"""
+		Purpose:
+			Mock VR client for testing message exchange.
+			Run in a separate thread.
+
+		Args:
+			port: Server port to connect to.
+			result_list: List to store received response.
+		"""
+		time.sleep(0.1)
+		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		client.settimeout(2.0)
+		client.connect(('localhost', port))
+
+		# Send message
+		msg = VRInputMessage(timestamp=1000.0)
+		data = msg.to_json().encode('utf-8')
+		framed = frame_message(data)
+		client.sendall(framed)
+
+		# Receive response
+		response_data = client.recv(65536)
+		if not response_data:
+			client.close()
+			return
+
+		length, content = unframe_message(response_data)
+		if length > 0:
+			response_json = content[:length].decode('utf-8')
+			result_list.append(
+				VROutputMessage.from_json(response_json)
+			)
+		client.close()
 
 
 # ============================================================================

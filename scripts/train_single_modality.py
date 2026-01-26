@@ -54,45 +54,33 @@ class SyntheticDataset(Dataset):
         targets = sample["targets"]
         
         # Filter for specific modality and map to MultiModalCreature keys
-        if self.modality == "audio":
-            return {
+        # Filter for specific modality and map to MultiModalCreature keys
+        modality_maps = {
+            "audio": lambda i, t: ({
+                "inputs": {"audio_waveform": i["audio_waveform"].squeeze(0)},
+                "targets": {"audio": t["audio"]}
+            }),
+            "voice_internal": lambda i, t: ({
+                "inputs": {"internal_voice_tokens": i["internal_voice_tokens"]},
+                "targets": {"internal_text": t["internal_text"]}
+            }),
+            "voice_external": lambda i, t: ({
+                "inputs": {"external_voice_tokens": i["external_voice_tokens"]},
+                "targets": {"external_text": t["external_text"]}
+            }),
+            "motion": lambda i, t: ({
                 "inputs": {
-                    "audio_waveform": inputs["audio_waveform"].squeeze(0)
+                    "joint_positions": i["joint_positions"],
+                    "joint_rotations": i["joint_rotations"]
                 },
-                "targets": {
-                    "audio": targets["audio"]
-                }
-            }
-        elif self.modality == "voice_internal":
-            return {
-                "inputs": {
-                    "internal_voice_tokens": inputs["internal_voice_tokens"]
-                },
-                "targets": {
-                    "internal_text": targets["internal_text"]
-                }
-            }
-        elif self.modality == "voice_external":
-            return {
-                "inputs": {
-                    "external_voice_tokens": inputs["external_voice_tokens"]
-                },
-                "targets": {
-                    "external_text": targets["external_text"]
-                }
-            }
-        elif self.modality == "motion":
-            return {
-                "inputs": {
-                    "joint_positions": inputs["joint_positions"],
-                    "joint_rotations": inputs["joint_rotations"]
-                },
-                "targets": {
-                    "animation": targets["animation"]
-                }
-            }
-        else:
-            raise ValueError(f"Unknown modality: {self.modality}")
+                "targets": {"animation": t["animation"]}
+            })
+        }
+
+        if self.modality in modality_maps:
+            return modality_maps[self.modality](inputs, targets)
+        
+        raise ValueError(f"Unknown modality: {self.modality}")
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
@@ -115,11 +103,19 @@ def main():
     Parses arguments, sets up model and data, and runs training loop.
     """
     parser = argparse.ArgumentParser(description="Train single modality components through the Brain")
-    parser.add_argument("--modality", type=str, required=True, 
-                        choices=["audio", "voice_internal", "voice_external", "motion"],
-                        help="Modality to train")
-    parser.add_argument("--config", type=str, default="configs/single_modality_config.yaml",
-                        help="Path to configuration file")
+    parser.add_argument(
+        "--modality", 
+        type=str, 
+        required=True, 
+        choices=["audio", "voice_internal", "voice_external", "motion"],
+        help="Modality to train"
+    )
+    parser.add_argument(
+        "--config", 
+        type=str, 
+        default="configs/single_modality_config.yaml",
+        help="Path to configuration file"
+    )
     args = parser.parse_args()
     
     config = load_config(args.config)

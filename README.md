@@ -52,7 +52,7 @@ python scripts/inference.py --model checkpoints/model_1b.pt
 
 ## Project Structure
 
-```
+````
 multi-dimensional-ai/
 ├── configs/          # Configuration files
 ├── src/              # Source code
@@ -65,18 +65,31 @@ multi-dimensional-ai/
 ├── tests/            # Unit and integration tests
 ├── scripts/          # Training/inference scripts
 └── notebooks/        # Analysis notebooks
-```
+
+## Development Tools
+
+The project includes strict code quality enforcement scripts:
+
+```bash
+# Analyze and enforce indentation (tabs only, max 5 levels)
+python scripts/analyze_indentation.py
+
+# Audit documentation (strict docstring requirements)
+python scripts/audit_docs.py
+````
+
+````
 
 ## Implementation Phases
 
 1. ✅ **Planning** - Architecture design complete
-2. ✅ **Foundation** (Weeks 1-4) - Basic structure and encoders
-3. ✅ **Single-Modality** (Weeks 5-8) - Train individual components
-4. ✅ **Pairwise Integration** (Weeks 9-14) - Combine modalities
-5. ✅ **Backpropagation** (Weeks 15-24) - Full model training implementation complete
-6. ✅ **Evolutionary** (Weeks 25-32) - Fitness-based optimization
-7. ✅ **VR Deployment** (Weeks 33-38) - Real-time VR integration
-8. ⏳ **Scaling** (Weeks 39+) - 7B model and advanced features
+2. ✅ **Foundation** - Basic structure and encoders
+3. ✅ **Single-Modality** - Train individual components
+4. ✅ **Pairwise Integration** - Combine modalities
+5. ✅ **Backpropagation** - Full model training implementation complete
+6. ✅ **Evolutionary** - Fitness-based optimization
+7. ✅ **VR Deployment** - Real-time VR integration
+8. ⏳ **Scaling** - 7B model and advanced features
 
 ## Requirements
 
@@ -138,7 +151,7 @@ If you use this work in your research, please cite:
   year={2026},
   url={https://github.com/calebhk98/Multi-Dimensional-AI}
 }
-```
+````
 
 ## License
 

@@ -24,6 +24,7 @@ class Config:
 	training: Dict[str, Any] = field(default_factory=dict)
 	inference: Dict[str, Any] = field(default_factory=dict)
 	evolution: Dict[str, Any] = field(default_factory=dict)
+	dataset: Dict[str, Any] = field(default_factory=dict)
 	
 	@classmethod
 	def from_files(
@@ -32,6 +33,7 @@ class Config:
 		training_config_path: str = "configs/training_config.yaml",
 		inference_config_path: str = "configs/inference_config.yaml",
 		evolution_config_path: str = "configs/evolution_config.yaml",
+		dataset_config_path: str = "configs/dataset_config.yaml",
 	) -> "Config":
 		"""
 		Load configuration from YAML files.
@@ -41,6 +43,7 @@ class Config:
 			training_config_path: Path to training configuration file
 			inference_config_path: Path to inference configuration file
 			evolution_config_path: Path to evolution configuration file
+			dataset_config_path: Path to dataset configuration file
 			
 		Returns:
 			Config object with loaded configurations
@@ -62,6 +65,10 @@ class Config:
 		if Path(evolution_config_path).exists():
 			with open(evolution_config_path, 'r') as f:
 				config.evolution = yaml.safe_load(f)
+
+		if Path(dataset_config_path).exists():
+			with open(dataset_config_path, 'r') as f:
+				config.dataset = yaml.safe_load(f)
 		
 		return config
 	
@@ -134,3 +141,7 @@ class Config:
 		if self.evolution:
 			with open(output_path / "evolution_config.yaml", 'w') as f:
 				yaml.dump(self.evolution, f, default_flow_style=False)
+
+		if self.dataset:
+			with open(output_path / "dataset_config.yaml", 'w') as f:
+				yaml.dump(self.dataset, f, default_flow_style=False)
