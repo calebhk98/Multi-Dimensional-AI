@@ -31,7 +31,7 @@ checkpoints/
 *.bin
 
 # Data & Logs
-data/
+/data/
 logs/
 wandb/
 runs/
