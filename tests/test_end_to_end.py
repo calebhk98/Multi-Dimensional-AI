@@ -535,6 +535,7 @@ class TestModelCheckpointing:
                     None
                 """
                 super().__init__()
+                self.dummy_param = torch.nn.Parameter(torch.randn(1))
             def forward(self, **kwargs):
                 """
                 Purpose:
@@ -1062,67 +1063,7 @@ class TestErrorHandling:
             decoder(wrong_dim)
 
 
-@pytest.mark.skip(reason="Model implementation not complete")
-class TestModelCheckpointing:
-    """Test model checkpointing workflows."""
 
-    def test_save_and_load_checkpoint(self, tmp_path):
-        """
-        Purpose:
-            Test saving and loading model checkpoint.
-            
-        Workflow:
-            1. Train model.
-            2. Save.
-            3. Load.
-            4. Compare key params.
-            
-        ToDo:
-            - Implement test.
-        """
-        # Would test:
-        # 1. Create and train model
-        # 2. Save checkpoint
-        # 3. Create new model
-        # 4. Load checkpoint
-        # 5. Verify parameters match
-        pass
-
-    def test_checkpoint_includes_metadata(self, tmp_path):
-        """
-        Purpose:
-            Test that checkpoint includes necessary metadata.
-            
-        Workflow:
-            1. Save checkpoint.
-            2. Load dict.
-            3. Verify keys (epoch, config, etc.).
-            
-        ToDo:
-            - Implement test.
-        """
-        # Should include:
-        # - Model state dict
-        # - Optimizer state dict
-        # - Training step
-        # - Configuration
-        # - Timestamp
-        pass
-
-    def test_backwards_compatibility(self, tmp_path):
-        """
-        Purpose:
-            Test loading checkpoints from older versions.
-            
-        Workflow:
-            1. Mock old checkpoint.
-            2. Load.
-            3. Verify success.
-            
-        ToDo:
-            - Implement test.
-        """
-        pass
 
 
 class TestReproducibility:
