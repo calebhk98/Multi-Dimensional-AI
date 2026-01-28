@@ -14,7 +14,7 @@ Create or modify `configs/training_config.yaml`:
 
 ```yaml
 training:
-    max_steps: 10000
+    max_steps: 1000000
     log_interval: 100
     save_interval: 1000
     optimizer:

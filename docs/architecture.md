@@ -4,6 +4,10 @@
 
 The Multi-Dimensional AI Creature uses a novel multi-modal transformer architecture designed to process 6 sensory streams simultaneously and generate 4 parallel output streams. This architecture allows the creature to exist autonomously within a VR world, perceiving and interacting with its environment in a human-like manner.
 
+## Implementation
+
+The main model is implemented as the `MultiModalCreature` class in `src/models/multimodal_transformer.py`. This class integrates all encoders, the transformer backbone, and decoders into a unified system.
+
 ## Core Components
 
 ### 1. Unified Transformer
