@@ -63,6 +63,17 @@ Train on your own text (e.g., books, articles).
 python scripts/tokenize_corpus.py --input data/my_book.txt --output data/corpus.bin
 ```
 
+**Option C: Use HuggingFace Datasets**
+Download and process datasets like Wikipedia directly.
+
+```bash
+# Install datasets library first
+pip install datasets
+
+# Run preparation script
+python scripts/prepare_hf_data.py --dataset wikimedia/wikipedia --config 20231101.en --output data/wiki.bin
+```
+
 ### 3. Training
 
 #### Text-to-Text Training (LLM Style)

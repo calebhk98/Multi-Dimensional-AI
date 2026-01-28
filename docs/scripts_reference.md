@@ -339,6 +339,28 @@ python scripts/tokenize_corpus.py --input corpus.txt --output tokenized/
 
 ---
 
+### prepare_hf_data.py
+
+**Purpose:** Convert HuggingFace datasets (cache or download) to binary format for training.
+
+**Usage:**
+
+```bash
+python scripts/prepare_hf_data.py --output data/output.bin --dataset wikimedia/wikipedia
+```
+
+**Options:**
+
+- `--dataset`: HuggingFace dataset name (default: wikimedia/wikipedia)
+- `--config`: Dataset config (default: 20231101.en)
+- `--cache_dir`: HF Cache directory (optional)
+- `--output`: Output .bin file path (required)
+- `--max_tokens`: Limit processing to N tokens (optional)
+
+**When to use:** Converting external datasets for use with training scripts.
+
+---
+
 ## Quick Reference Table
 
 | Script                     | Phase     | Purpose                    | Key Option      |
