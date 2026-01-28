@@ -48,6 +48,9 @@ def profile_training():
 		2. Create mock data.
 		3. Profile train_step calls.
 		4. Export trace to OUTPUT_DIR.
+
+	Returns:
+		None
 	"""
 	try:
 		from src.training.trainer import Trainer
@@ -59,13 +62,30 @@ def profile_training():
 		
 		class MockModel(nn.Module):
 			def __init__(self):
+				"""Initialize MockModel."""
 				super().__init__()
 				self.param = nn.Parameter(torch.randn(1))
 				
 			def forward(self, **kwargs):
+				"""
+				Forward pass.
+
+				Returns:
+					dict: Output.
+				"""
 				return {"hidden": self.param}
 				
 			def compute_loss(self, outputs, targets):
+				"""
+				Compute loss.
+				
+				Args:
+					outputs: Outputs.
+					targets: Targets.
+					
+				Returns:
+					tuple: Loss and dict.
+				"""
 				return torch.tensor(0.1, requires_grad=True), {"total": 0.1}
 		
 		model_class = MockModel

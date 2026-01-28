@@ -14,17 +14,37 @@ class MockCreatureForFullPass(nn.Module):
 	Simple mock model to test full pass capability.
 	"""
 	def __init__(self):
+		"""Initialize mock model."""
 		super().__init__()
 		self.encoder = nn.Linear(100, 64)
 		self.decoder = nn.Linear(64, 10)
 		
 	def forward(self, **kwargs):
+		"""
+		Forward pass.
+
+		Args:
+			**kwargs: Inputs.
+
+		Returns:
+			dict: Outputs.
+		"""
 		x = kwargs.get("vision_left", torch.randn(2, 100))
 		h = self.encoder(x)
 		out = self.decoder(h)
 		return {"hidden": h, "output": out}
 		
 	def compute_loss(self, outputs, targets):
+		"""
+		Compute loss.
+
+		Args:
+			outputs: Model outputs.
+			targets: Targets.
+
+		Returns:
+			tuple: Loss and dict.
+		"""
 		pred = outputs["output"]
 		target = targets.get("internal_text", torch.zeros_like(pred))
 		loss = nn.functional.mse_loss(pred, target)
@@ -43,6 +63,9 @@ def test_full_forward_backward_pass():
 		4. Compute loss.
 		5. Run backward pass.
 		6. Verify gradients exist.
+
+	ToDo:
+		- Add gradient norm checks.
 	"""
 	model = MockCreatureForFullPass()
 	
@@ -80,6 +103,9 @@ def test_full_pass_with_trainer():
 		1. Setup Trainer with mock model.
 		2. Run train_step.
 		3. Verify loss returned and parameters updated.
+
+	ToDo:
+		- Test with real MultiModalCreature.
 	"""
 	from src.training.trainer import Trainer
 	

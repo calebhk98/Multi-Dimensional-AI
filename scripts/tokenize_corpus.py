@@ -50,6 +50,7 @@ def tokenize_corpus(input_file: str, output_file: str):
 
 
 def main():
+	"""Main entry point."""
 	parser = argparse.ArgumentParser(description="Tokenize text corpus for training")
 	parser.add_argument(
 		"--input",

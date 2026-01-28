@@ -217,7 +217,15 @@ class InferenceServer:
 		return self._load_checkpoint_file(checkpoint_path)
 
 	def _load_checkpoint_file(self, checkpoint_path: Path) -> Optional[torch.nn.Module]:
-		"""Helper to load model from file."""
+		"""
+		Helper to load model from file.
+
+		Args:
+			checkpoint_path: Path to checkpoint.
+
+		Returns:
+			Optional[torch.nn.Module]: Loaded model.
+		"""
 		device = self.config.get("inference", {}).get("device", "cpu")
 		logger.info(f"Loading model from {checkpoint_path}")
 

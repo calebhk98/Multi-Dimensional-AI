@@ -25,18 +25,52 @@ except ImportError:
 
 class MockCreature(nn.Module):
     def __init__(self, config):
+        """
+        Initialize MockCreature.
+
+        Args:
+            config: Configuration dictionary.
+        """
         super().__init__()
         self.config = config
         self.param = nn.Parameter(torch.randn(1))
         
     def forward(self, **kwargs):
+        """
+        Forward pass.
+
+        Args:
+            **kwargs: Inputs.
+
+        Returns:
+            Dict: Hidden state.
+        """
         # Consume all expected inputs
         return {"hidden": self.param}
         
     def compute_loss(self, outputs, targets):
+        """
+        Compute loss.
+
+        Args:
+            outputs: Outputs.
+            targets: Targets.
+
+        Returns:
+            Tuple: Loss and log dict.
+        """
         return torch.tensor(0.1, requires_grad=True), {"total": 0.1}
         
     def to(self, device):
+        """
+        Move to device.
+
+        Args:
+            device: Device.
+
+        Returns:
+            self
+        """
         return self
 
 def test_real_data_smoke_loop():
@@ -49,6 +83,9 @@ def test_real_data_smoke_loop():
         2. Init Dataset and DataLoader with real_data_collate_fn.
         3. Init MockCreature (or real if available) and Trainer.
         4. Run trainer.train_step(batch).
+
+    ToDo:
+        - Add full validation of loss values.
     """
     # 1. Setup temp data
     with tempfile.TemporaryDirectory() as temp_dir:

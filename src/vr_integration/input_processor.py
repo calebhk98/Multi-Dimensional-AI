@@ -150,7 +150,15 @@ class VRInputProcessor:
 			return None
 
 	def _decode_image_with_pil(self, image_bytes: bytes) -> torch.Tensor:
-		"""Helper to decode image bytes using PIL."""
+		"""
+		Helper to decode image bytes using PIL.
+
+		Args:
+			image_bytes: Raw image bytes.
+
+		Returns:
+			torch.Tensor: Decoded image tensor or placeholder.
+		"""
 		try:
 			from PIL import Image
 			import torchvision.transforms as T

@@ -90,6 +90,9 @@ def test_normalization():
         2. Inspect vision and audio values (mocked) to ensure transformations are applied.
         (Note: Since we mock read_video/load, we mostly check that the shape/type is correct 
          and that the code doesn't crash during transform application).
+
+    ToDo:
+        - Implement real value checks with controlled mock data.
     """
     # We can rely on the side-effects or simply check that the returned tensors 
     # are floats and have expected shapes after "normalization".
@@ -104,6 +107,9 @@ def test_real_data_collate():
         1. Create a batch of samples with different lengths (if applicable) or just standard samples.
         2. Run collate function.
         3. Check stacked tensor shapes.
+
+    ToDo:
+        - Add checks for mixed missing/present modalities.
     """
     from src.data.real_dataset import real_data_collate_fn
     

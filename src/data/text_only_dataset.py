@@ -26,11 +26,20 @@ class TextOnlyDataset(Dataset):
 		self.text_dataset = text_dataset
 
 	def __len__(self):
+		"""
+		Return the number of samples.
+
+		Returns:
+			int: Dataset length.
+		"""
 		return len(self.text_dataset)
 
 	def __getitem__(self, idx):
 		"""
 		Get a sample in model-compatible format.
+
+		Args:
+			idx: Index of sample.
 
 		Returns:
 			dict with 'inputs' and 'targets' in multi-modal format

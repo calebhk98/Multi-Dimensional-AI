@@ -12,13 +12,35 @@ from src.training.trainer import Trainer
 
 class MockModel(nn.Module):
     def __init__(self):
+        """
+        Initialize MockModel.
+        """
         super().__init__()
         self.layer = nn.Linear(10, 5)
         
     def forward(self, **kwargs):
+        """
+        Forward pass.
+
+        Args:
+            **kwargs: Input mock data.
+
+        Returns:
+            torch.Tensor: Model output.
+        """
         return self.layer(kwargs.get("vision_left", torch.randn(2, 10)))
         
     def compute_loss(self, outputs, targets):
+        """
+        Compute loss for the mock model.
+
+        Args:
+            outputs: Model outputs.
+            targets: Target values.
+
+        Returns:
+            Tuple[torch.Tensor, Dict]: Total loss and scalar dictionary.
+        """
         # Return a scalar loss and a rich dictionary of breakdown losses
         loss = torch.tensor(1.0, requires_grad=True)
         loss_dict = {
@@ -38,6 +60,9 @@ def test_modality_specific_logging():
         1. Setup Trainer with MockModel.
         2. Run train_step.
         3. Check return values for granular keys.
+
+    ToDo:
+        - Add more granular checks.
     """
     model = MockModel()
     config = {"training": {}}
@@ -67,6 +92,9 @@ def test_checkpoint_loading(tmp_path):
         2. Initialize Trainer B.
         3. Trainer B loads checkpoint.
         4. Verify step/config/state match.
+
+    ToDo:
+        - Implement real weight verification.
     """
     model = MockModel()
     config = {

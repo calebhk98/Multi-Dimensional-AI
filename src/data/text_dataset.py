@@ -51,11 +51,20 @@ class TextDataset(Dataset):
 		print(f"Creating {self.num_samples:,} samples of length {seq_length}")
 
 	def __len__(self):
+		"""
+		Return the number of samples in the dataset.
+
+		Returns:
+			int: Number of samples.
+		"""
 		return self.num_samples
 
 	def __getitem__(self, idx):
 		"""
 		Get a training sample.
+
+		Args:
+			idx: Index of the sample to retrieve.
 
 		Returns:
 			dict with 'input' [seq_length] and 'target' [seq_length]

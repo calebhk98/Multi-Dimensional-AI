@@ -16,12 +16,21 @@ from src.data.text_only_dataset import TextOnlyDataset, text_only_collate_fn
 
 
 def load_config(config_path: str):
-	"""Load YAML configuration file."""
+	"""
+	Load YAML configuration file.
+
+	Args:
+		config_path: Path to config file.
+
+	Returns:
+		dict: Loaded configuration.
+	"""
 	with open(config_path, 'r') as f:
 		return yaml.safe_load(f)
 
 
 def main():
+	"""Main entry point."""
 	parser = argparse.ArgumentParser(description="Text-only training for Multi-Dimensional AI")
 	parser.add_argument(
 		"--config",
