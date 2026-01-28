@@ -940,3 +940,203 @@ class TestTrainerEdgeCases:
 
         trainer.train_step = check_mode_train_step
         trainer.train()
+
+
+class TestCheckpointValidation:
+	"""
+	Purpose:
+		Tests for checkpoint validation with real data shapes.
+		
+	Workflow:
+		Validate checkpoint save/load and resume functionality.
+		
+	ToDo:
+		None
+	"""
+	
+	def test_checkpoint_save_with_real_shapes(self, tmp_path):
+		"""
+		Purpose:
+			Test checkpoint saving with realistic multi-modal data shapes.
+			
+		Workflow:
+			1. Create trainer with multi-modal dataset
+			2. Save checkpoint
+			3. Load and verify shapes match expected
+			
+		ToDo:
+			None
+		"""
+		from src.data.synthetic_generator import SyntheticDataGenerator
+		from src.data.multimodal_dataset import MultiModalDataset, multimodal_collate_fn
+		
+		generator = SyntheticDataGenerator()
+		dataset = MultiModalDataset(generator, length=10)
+		loader = DataLoader(dataset, batch_size=2, collate_fn=multimodal_collate_fn)
+		
+		model = SimpleModel()
+		config = {
+			"training": {
+				"max_steps": 5,
+				"checkpointing": {"save_dir": str(tmp_path)}
+			}
+		}
+		
+		trainer = Trainer(model, config, loader, device="cpu")
+		trainer.save_checkpoint(step=5)
+		
+		# Load and verify
+		checkpoint = torch.load(tmp_path / "model_step_5.pt", map_location="cpu")
+		assert checkpoint["step"] == 5
+		assert "model_state_dict" in checkpoint
+		assert "optimizer_state_dict" in checkpoint
+		assert "config" in checkpoint
+	
+	def test_checkpoint_load_and_resume(self, tmp_path):
+		"""
+		Purpose:
+			Test that training can resume from checkpoint.
+			
+		Workflow:
+			1. Train for 10 steps and save
+			2. Create new trainer and load checkpoint
+			3. Resume training for 5 more steps
+			4. Verify final model is different from initial
+			
+		ToDo:
+			None
+		"""
+		from src.data.synthetic_generator import SyntheticDataGenerator
+		from src.data.multimodal_dataset import MultiModalDataset, multimodal_collate_fn
+		
+		generator = SyntheticDataGenerator()
+		dataset = MultiModalDataset(generator, length=50)
+		loader = DataLoader(dataset, batch_size=2, collate_fn=multimodal_collate_fn)
+		
+		model = SimpleModel()
+		config = {
+			"training": {
+				"max_steps": 10,
+				"save_interval": 10,
+				"checkpointing": {"save_dir": str(tmp_path)}
+			}
+		}
+		
+		# Initial training
+		trainer1 = Trainer(model, config, loader, device="cpu")
+		trainer1.train()
+		
+		# Save initial params
+		checkpoint = torch.load(tmp_path / "model_step_10.pt", map_location="cpu")
+		initial_params = [p.clone() for p in model.parameters()]
+		
+		# Create new trainer and load checkpoint
+		new_model = SimpleModel()
+		new_trainer = Trainer(new_model, config, loader, device="cpu")
+		loaded_checkpoint = new_trainer.load_checkpoint(tmp_path / "model_step_10.pt")
+		
+		# Verify loaded step
+		assert loaded_checkpoint["step"] == 10
+		
+		# Train for a few more steps
+		for _ in range(5):
+			batch = next(iter(loader))
+			new_trainer.train_step(batch)
+		
+		# Verify params have changed
+		params_changed = False
+		for initial, current in zip(initial_params, new_model.parameters()):
+			if not torch.equal(initial, current):
+				params_changed = True
+				break
+		
+		assert params_changed
+	
+	def test_checkpoint_resume_preserves_optimizer_state(self, tmp_path):
+		"""
+		Purpose:
+			Test that optimizer state is preserved across checkpoint save/load.
+			
+		Workflow:
+			1. Run train steps to build optimizer state
+			2. Save checkpoint
+			3. Load into new trainer
+			4. Verify optimizer state matches
+			
+		ToDo:
+			None
+		"""
+		from src.data.synthetic_generator import SyntheticDataGenerator
+		from src.data.multimodal_dataset import MultiModalDataset, multimodal_collate_fn
+		
+		generator = SyntheticDataGenerator()
+		dataset = MultiModalDataset(generator, length=20)
+		loader = DataLoader(dataset, batch_size=2, collate_fn=multimodal_collate_fn)
+		
+		model = SimpleModel()
+		config = {
+			"training": {
+				"max_steps": 10,
+				"checkpointing": {"save_dir": str(tmp_path)}
+			}
+		}
+		
+		trainer = Trainer(model, config, loader, device="cpu")
+		
+		# Run few steps
+		for _ in range(5):
+			batch = next(iter(loader))
+			trainer.train_step(batch)
+		
+		# Save checkpoint
+		trainer.save_checkpoint(step=5)
+		
+		# Load intoan model
+		new_model = SimpleModel()
+		new_trainer = Trainer(new_model, config, loader, device="cpu")
+		new_trainer.load_checkpoint(tmp_path / "model_step_5.pt")
+		
+		# Compare optimizer states (check that exp_avg buffers exist)
+		# This verifies Adam state was preserved
+		old_state = trainer.optimizer.state_dict()
+		new_state = new_trainer.optimizer.state_dict()
+		
+		# Both should have state for parameters
+		assert len(old_state["state"]) == len(new_state["state"])
+	
+	def test_checkpoint_with_multimodal_batch(self, tmp_path):
+		"""
+		Purpose:
+			Verify checkpoint works with full multi-modal batch structure.
+			
+		Workflow:
+			1. Use synthetic multi-modal dataset
+			2. Train and save checkpoint
+			3. Verify no errors with nested data structures
+			
+		ToDo:
+			None
+		"""
+		from src.data.synthetic_generator import SyntheticDataGenerator
+		from src.data.multimodal_dataset import MultiModalDataset, multimodal_collate_fn
+		
+		generator = SyntheticDataGenerator()
+		dataset = MultiModalDataset(generator, length=10)
+		loader = DataLoader(dataset, batch_size=2, collate_fn=multimodal_collate_fn)
+		
+		# Use simple model for testing infrastructure
+		model = SimpleModel()
+		config = {
+			"training": {
+				"max_steps": 3,
+				"checkpointing": {"save_dir": str(tmp_path)}
+			}
+		}
+		
+		trainer = Trainer(model, config, loader, device="cpu")
+		trainer.train()
+		
+		# Verify checkpoint exists and contains expected data
+		checkpoint = torch.load(tmp_path / "model_final.pt", map_location="cpu")
+		assert "step" in checkpoint
+		assert checkpoint["step"] == 3

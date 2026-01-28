@@ -75,3 +75,75 @@ Checks:
 - File existence
 - Timestamp continuity
 - Reasonable sensor ranges
+
+### Validation Script Parameters
+
+```bash
+python scripts/validate_session.py <session_dir> [--strict] [--fix]
+```
+
+**Options**:
+
+- `--strict`: Enable strict validation (fail on warnings)
+- `--fix`: Attempt to auto-fix minor issues (timestamp gaps, etc.)
+
+### Validation Output
+
+The script outputs a JSON report with:
+
+```json
+{
+	"session": "session_XXX",
+	"status": "passed|failed|warnings",
+	"checks": {
+		"files_exist": true,
+		"timestamp_continuity": true,
+		"sensor_ranges": true,
+		"video_audio_sync": true
+	},
+	"warnings": [],
+	"errors": []
+}
+```
+
+## Troubleshooting
+
+### Common Validation Failures
+
+| Issue                       | Cause                          | Solution                                  |
+| --------------------------- | ------------------------------ | ----------------------------------------- |
+| **Missing vision_left.mp4** | Recording daemon crashed       | Re-record session                         |
+| **Timestamp gaps > 100ms**  | Network lag or dropped packets | Check --fix option or mark as low-quality |
+| **Touch values > 1.0**      | Sensor calibration drift       | Recalibrate sensors, re-record            |
+| **Audio/video desync**      | Clock drift                    | Validate NTP sync before recording        |
+
+### Quality Checks
+
+**Good Session**:
+
+- Timestamp gaps < 35ms (30 FPS ± tolerance)
+- All files present
+- Sensor values in valid ranges
+- Audio RMS > 0.001 (not silent)
+
+**Low Quality Session**:
+
+- Timestamp gaps 35-100ms
+- Optional modalities missing (vision_right)
+- Sensor saturation < 5%
+
+**Failed Session**:
+
+- Timestamp gaps > 100ms (should discard or fix)
+- Required files missing
+- Sensor values out of range
+
+## Post-Processing Pipeline
+
+1. **Validate**: Run `validate_session.py` on all sessions
+2. **Filter**: Remove failed sessions
+3. **Augment**: Generate augmented versions (optional)
+4. **Index**: Create dataset index file
+5. **Train**: Use with `RealMultiModalDataset`
+
+See [dataset_formats.md](dataset_formats.md) for data loading details.

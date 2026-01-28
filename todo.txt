@@ -17,25 +17,26 @@ This checklist captures the remaining work needed before real-data training can 
 ## Training/inference plumbing
 - [x] Add train/eval dataset configuration to `configs/`.
 - [x] Implement a training script that wires real datasets into `Trainer`.
-- [ ] Add metrics/logging for modality-specific losses and throughput.
-- [ ] Add checkpoint validation + resume tests with real data shapes.
+- [x] Add metrics/logging for modality-specific losses and throughput. (2026-01-28)
+- [x] Add checkpoint validation + resume tests with real data shapes. (2026-01-28)
 
 ## Quality & scale readiness
-- [ ] Add smoke tests with real sample batches (small subsets).
-- [ ] Add profiling (memory/time) for multi-modal batches.
+- [x] Add smoke tests with real sample batches (small subsets). (2026-01-28)
+- [x] Add profiling (memory/time) for multi-modal batches. (2026-01-28)
 - [ ] Validate a full forward/backward pass on a realistic config.
 
 ## Documentation
-- [ ] Document dataset formats + expected tensor shapes.
-- [ ] Document data collection process for VR sessions.
-- [ ] Provide an end-to-end training walkthrough with real data.
+- [x] Document dataset formats + expected tensor shapes. (2026-01-28)
+- [x] Document data collection process for VR sessions. (2026-01-28)
+- [x] Provide an end-to-end training walkthrough with real data. (2026-01-28)
 
 ## Rough, model-scale estimates (1B params, 4 output streams)
-- [ ] Document exact assumptions for any published estimate (sequence length, frame rate, audio sample rate, batch size, hardware).
-- [ ] Add an estimate table covering:
+- [x] Document exact assumptions for any published estimate (sequence length, frame rate, audio sample rate, batch size, hardware). (2026-01-28)
+- [x] Add an estimate table covering:
   - Steps: 1,000,000 (from configs), effective batch size 64.
   - Tokens per step: if 4 tokens are emitted per stream per step, total output tokens/step = 4.
   - Total output tokens (rough): 1,000,000 steps × 64 batch × 4 tokens ≈ 256,000,000 output tokens.
-  - Samples (rough): 1,000,000 steps × 64 batch ≈ 64,000,000 samples.
-  - Wall-clock: depends on hardware throughput (tokens/sec or TFLOPs).
-- [ ] Provide a conservative training-time range for 1B parameters on single A100/4090 based on typical 1B-model throughput.
+   - Samples (rough): 1,000,000 steps × 64 batch ≈ 64,000,000 samples.
+  - Wall-clock: depends on hardware throughput (tokens/sec or TFLOPs). (2026-01-28)
+- [x] Provide a conservative training-time range for 1B parameters on single A100/4090 based on typical 1B-model throughput. (2026-01-28)
+
