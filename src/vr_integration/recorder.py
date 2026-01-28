@@ -1,3 +1,6 @@
+"""
+Module for recording VR session data including video, audio, and metadata.
+"""
 
 import json
 import logging
@@ -32,6 +35,12 @@ class VRRecorder:
     """
     
     def __init__(self, storage_root: str = "dataset_raw"):
+        """
+        Initialize the VRRecorder.
+
+        Args:
+            storage_root (str): Root directory for storing recorded sessions.
+        """
         self.storage_root = Path(storage_root)
         self.storage_root.mkdir(parents=True, exist_ok=True)
         
@@ -53,7 +62,12 @@ class VRRecorder:
         self.worker_thread = None
 
     def start_session(self, session_id: str = None):
-        """Start a new recording session."""
+        """
+        Start a new recording session.
+
+        Args:
+            session_id (str): Optional unique identifier for the session. If None, timestamp is used.
+        """
         if not session_id:
             session_id = f"session_{int(time.time())}"
             
@@ -78,7 +92,9 @@ class VRRecorder:
         logger.info(f"Started recording session: {session_id}")
 
     def stop_session(self):
-        """Stop current session and close files."""
+        """
+        Stop current session and close files.
+        """
         if not self._is_recording:
             return
             
@@ -104,6 +120,9 @@ class VRRecorder:
         """
         Record a single frame from input message.
         Writes immediately (blocking) for simplicity, or queue if needed.
+
+        Args:
+            message (VRInputMessage): The input message containing sensor data.
         """
         if not self._is_recording:
             return
@@ -131,7 +150,13 @@ class VRRecorder:
             self._write_video_frame(message.vision_left, message.vision_right)
             
     def _write_video_frame(self, left_b64: str, right_b64: str):
-        """Decode and write video frames."""
+        """
+        Decode and write video frames.
+
+        Args:
+            left_b64 (str): Base64 encoded string of the left eye image.
+            right_b64 (str): Base64 encoded string of the right eye image.
+        """
         try:
             # Decode Left
             left_bytes = base64.b64decode(left_b64)
@@ -153,14 +178,24 @@ class VRRecorder:
                     h, w = right_img.shape[:2]
                     self.video_writer_r = self._init_writer("vision_right.mp4", w, h)
                 self.video_writer_r.write(right_img)
-                
+
+        except Exception as e:
+            logger.error(f"Error writing video frame: {e}")
+
     def _init_writer(self, filename: str, w: int, h: int):
-        """Helper to initialize video writer."""
+        """
+        Helper to initialize video writer.
+
+        Args:
+            filename (str): Name of the video file.
+            w (int): Width of the video.
+            h (int): Height of the video.
+
+        Returns:
+            cv2.VideoWriter: Initialized video writer object.
+        """
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         return cv2.VideoWriter(
             str(self.current_session_dir / filename), 
             fourcc, 30, (w, h)
         )
-                
-        except Exception as e:
-            logger.error(f"Error writing video frame: {e}")
