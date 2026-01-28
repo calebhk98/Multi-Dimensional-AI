@@ -8,6 +8,11 @@ import yaml
 import torch
 from torch.utils.data import DataLoader
 from pathlib import Path
+import sys
+import os
+
+# Add project root to path so we can import src
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.models.multimodal_transformer import MultiModalCreature
 from src.training.trainer import Trainer
