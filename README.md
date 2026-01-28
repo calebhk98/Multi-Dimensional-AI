@@ -22,7 +22,9 @@ This project implements an AI creature with:
 - **Parallel token generation** across all output modalities
 - **Hybrid training:** Backpropagation → Evolutionary optimization
 
-## Quick Start
+## Getting Started
+
+### 1. Installation & Setup
 
 ```bash
 # Clone repository
@@ -38,15 +40,56 @@ pip install -r requirements.txt
 
 # Configure settings
 cp .env.example .env
-# Edit .env with your settings
+# Edit .env with your settings (optional for basic training)
+```
 
-# Run tests
-pytest tests/ -v
+### 2. Prepare Data
 
-# Train model (Phase 4+)
+You can either generate dummy data for testing or tokenize your own text corpus.
+
+**Option A: Generate Dummy Data (Fast)**
+Useful for checking if the training pipeline works.
+
+```bash
+python scripts/generate_dummy_data.py --output data/dummy_corpus.bin --tokens 1000000
+```
+
+**Option B: Tokenize Custom Text**
+Train on your own text (e.g., books, articles).
+
+```bash
+# 1. Place your text file in data/ (e.g., data/my_book.txt)
+# 2. Run tokenizer
+python scripts/tokenize_corpus.py --input data/my_book.txt --output data/corpus.bin
+```
+
+### 3. Training
+
+#### Text-to-Text Training (LLM Style)
+
+Train the model just on text input/output, similar to GPT.
+
+```bash
+# Normal training
+python scripts/train_text_only.py --config configs/training_config.yaml --data data/corpus.bin
+
+# Fast Dry Run (Sanity check)
+python scripts/train_text_only.py --config configs/training_config.yaml --data data/corpus.bin --dry-run
+```
+
+#### Full Multi-Modal Training (Phase 4+)
+
+Train with all senses enabled (Vision, Audio, etc).
+
+```bash
 python scripts/train.py --config configs/training_config.yaml
+```
 
-# Run inference
+### 4. Inference
+
+Interact with the trained model.
+
+```bash
 python scripts/inference.py --model checkpoints/model_1b.pt
 ```
 

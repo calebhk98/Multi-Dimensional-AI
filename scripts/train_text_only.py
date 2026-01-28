@@ -93,10 +93,20 @@ def main():
 
 	# Dry run override
 	if args.dry_run:
-		print("\n*** DRY RUN MODE: Training for only 10 steps ***")
-		config["training"]["max_steps"] = 10
+		print("Running in DRY RUN mode")
+		print("Overriding config for safety/speed on local machine:")
+		# Force safe limits to prevent RAM explosition
+		config.setdefault("training", {})
+		config["training"]["batch_size"] = 2
+		config["training"]["max_steps"] = 5
 		config["training"]["log_interval"] = 1
-		config["training"]["save_interval"] = 10
+		config["training"]["save_interval"] = 10000000 # Disable saving
+		 # Also reduce gradient accumulation to avoid confusion
+		config["training"]["gradient_accumulation_steps"] = 1
+		
+		print("- Batch size: 2")
+		print("- Max steps: 5")
+		print("- Saving disabled")
 		config["defaults"]["save_dir"] = "checkpoints/dry_run"
 
 	# Create trainer
