@@ -28,6 +28,7 @@ class AudioEncoder(nn.Module):
 		conv_channels: int = 512,
 		codebook_size: int = 1024,
 		dropout: float = 0.1,
+		**kwargs,  # Absorb extra config args (e.g. num_codebooks, encoder_type)
 	):
 		"""
 		==============================================================================
