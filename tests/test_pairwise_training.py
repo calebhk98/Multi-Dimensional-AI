@@ -33,7 +33,7 @@ def generator():
     """
     return SyntheticDataGenerator(
         vocab_size=100,
-        max_seq_length=20,
+        max_seq_length=32,
         sample_rate=16000,
         audio_duration=0.1,
         image_size=32,
