@@ -4,7 +4,7 @@ Simple LLM-style training: text in, text out.
 """
 
 import argparse
-import yaml
+
 import torch
 from torch.utils.data import DataLoader
 from pathlib import Path
@@ -18,20 +18,10 @@ from src.models.multimodal_transformer import MultiModalCreature
 from src.training.trainer import Trainer
 from src.data.text_dataset import TextDataset
 from src.data.text_only_dataset import TextOnlyDataset, text_only_collate_fn
+from src.config import Config
 
 
-def load_config(config_path: str):
-	"""
-	Load YAML configuration file.
 
-	Args:
-		config_path: Path to config file.
-
-	Returns:
-		dict: Loaded configuration.
-	"""
-	with open(config_path, 'r') as f:
-		return yaml.safe_load(f)
 
 
 def main():
@@ -58,7 +48,17 @@ def main():
 
 	# Load configuration
 	print(f"Loading config from {args.config}...")
-	config = load_config(args.config)
+	config_obj = Config.from_files(training_config_path=args.config)
+	
+	# Flatten config into a single dictionary for compatibility with current codebase
+	config = {}
+	if config_obj.model:
+		config.update(config_obj.model)
+	if config_obj.training:
+		config.update(config_obj.training)
+	if config_obj.inference:
+		config.update(config_obj.inference)
+
 
 	# Setup device
 	requested_device = config.get("defaults", {}).get("device", "cuda")
@@ -106,7 +106,7 @@ def main():
 		config["training"]["max_steps"] = 5
 		config["training"]["log_interval"] = 1
 		config["training"]["save_interval"] = 10000000 # Disable saving
-		 # Also reduce gradient accumulation to avoid confusion
+		# Also reduce gradient accumulation to avoid confusion
 		config["training"]["gradient_accumulation_steps"] = 1
 		
 		print("- Batch size: 2")
