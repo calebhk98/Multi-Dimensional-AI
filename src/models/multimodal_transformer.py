@@ -61,16 +61,19 @@ class MultiModalCreature(nn.Module):
 		# Extract dimensions
 		vocab_size = model_config.get("encoders", {}).get("internal_voice", {}).get("vocab_size", 50257)
 		embedding_dim = model_config.get("transformer", {}).get("hidden_dim", 1536)
+		max_seq_len = model_config.get("encoders", {}).get("internal_voice", {}).get("max_seq_length", 512)
 		
 		# === ENCODERS ===
 		self.internal_voice_encoder = InternalVoiceEncoder(
 			vocab_size=vocab_size,
 			embedding_dim=embedding_dim,
+			max_seq_length=max_seq_len,
 		)
 		
 		self.external_voice_encoder = ExternalVoiceEncoder(
 			vocab_size=vocab_size,
 			embedding_dim=embedding_dim,
+			max_seq_length=max_seq_len,
 		)
 		
 		audio_config = model_config.get("encoders", {}).get("audio", {}).copy()

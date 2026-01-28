@@ -3,30 +3,30 @@
 
 defaults:
     seed: 42
-    device: "cuda"  # or "cpu"
+    device: "cuda" # or "cpu"
     save_dir: "checkpoints/text_only"
 
 training:
-    max_steps: 10000
-    batch_size: 8
+    max_steps: 31250 # Approx 1M samples with batch 32
+    batch_size: 32 # Fits comfortably on 3090 for 10M model
     log_interval: 100
-    save_interval: 1000
+    save_interval: 5000
     optimizer:
         lr: 3.0e-4
         weight_decay: 0.01
         betas: [0.9, 0.95]
 
 model:
-    # Transformer backbone (small for quick testing)
+    # Transformer backbone (10M parameters - "Tiny")
     transformer:
-        num_layers: 6           # Start small, increase to 12-24 for better quality
-        hidden_dim: 512         # 512 for testing, 1536 for 1B model, 4096 for 7B
-        num_attention_heads: 8  # Must divide hidden_dim evenly
-        ffn_dim: 2048           # Typically 4x hidden_dim
+        num_layers: 6
+        hidden_dim: 512
+        num_attention_heads: 8
+        ffn_dim: 2048 # 4x hidden_dim
         dropout: 0.1
         attention_dropout: 0.1
         activation: "gelu"
-        max_position_embeddings: 4096
+        max_position_embeddings: 2048
         layer_norm_eps: 1.0e-5
 
     # Token fusion
@@ -37,23 +37,23 @@ model:
     # Input encoder (only internal_voice for text-only)
     encoders:
         internal_voice:
-            vocab_size: 50257       # GPT-2 tokenizer vocab size
-            embedding_dim: 512      # Must match transformer.hidden_dim
-            max_seq_length: 512     # Context window
+            vocab_size: 50257 # GPT-2 tokenizer vocab size
+            embedding_dim: 512 # Must match transformer.hidden_dim
+            max_seq_length: 2048 # Context window
 
     # Output decoder (only internal_text for text-only)
     decoders:
         internal_text:
-            vocab_size: 50257       # Match encoder vocab_size
-            head_dim: 512           # Match transformer.hidden_dim
-            use_null_token: false   # No need for null tokens in text-only
+            vocab_size: 50257 # Match encoder vocab_size
+            head_dim: 512 # Match transformer.hidden_dim
+            use_null_token: false # No need for null tokens in text-only
 
 # Loss weights (only internal_text is used)
 loss_weights:
     internal_text: 1.0
-    external_text: 0.0      # Not used in text-only mode
-    audio: 0.0              # Not used in text-only mode
-    animation: 0.0          # Not used in text-only mode
+    external_text: 0.0 # Not used in text-only mode
+    audio: 0.0 # Not used in text-only mode
+    animation: 0.0 # Not used in text-only mode
 
 # Sampling configuration (for inference/generation)
 sampling:

@@ -30,6 +30,14 @@ This checklist captures the remaining work needed before real-data training can 
 - [x] Document data collection process for VR sessions. (2026-01-28)
 - [x] Provide an end-to-end training walkthrough with real data. (2026-01-28)
 
+## Text-Only Training Readiness (Phase 1)
+- [x] Create text-only training configuration (`configs/text_only_config.yaml`). (2026-01-28)
+- [x] Create detailed text-only training guide (`docs/text_only_training.md`). (2026-01-28)
+- [x] Implement text generation validation script (`scripts/test_text_generation.py`). (2026-01-28)
+- [x] Implement environment diagnostic script (`scripts/check_environment.py`). (2026-01-28)
+- [x] Obtain tokenized text data (.bin). (Using dummy data generator)
+- [x] Run dry-run validation on target hardware. (Validated on laptop CPU)
+
 ## Rough, model-scale estimates (1B params, 4 output streams)
 - [x] Document exact assumptions for any published estimate (sequence length, frame rate, audio sample rate, batch size, hardware). (2026-01-28)
 - [x] Add an estimate table covering:
