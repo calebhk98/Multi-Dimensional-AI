@@ -109,6 +109,7 @@ def main():
 	if args.dry_run:
 		print("Running in DRY RUN mode")
 		print("Overriding config for safety/speed on local machine:")
+
 		# Force safe limits to prevent RAM explosition
 		config.setdefault("training", {})
 		config["training"]["batch_size"] = 2
@@ -121,7 +122,21 @@ def main():
 		print("- Batch size: 2")
 		print("- Max steps: 5")
 		print("- Saving disabled")
-		config["defaults"]["save_dir"] = "checkpoints/dry_run"
+		
+		# Set dry run save dir in multiple places to be safe
+		# 1. Where Trainer looks: config["training"]["checkpointing"]["save_dir"]
+		# 2. Where original code looked: config["defaults"]["save_dir"]
+		
+		dry_run_dir = "checkpoints/dry_run"
+		
+		# Trainer path
+		config.setdefault("training", {}).setdefault("checkpointing", {})["save_dir"] = dry_run_dir
+		
+		# Defaults path (just in case)
+		config.setdefault("defaults", {})["save_dir"] = dry_run_dir
+		
+		# Root checkpointing (config file structure)
+		config.setdefault("checkpointing", {})["save_dir"] = dry_run_dir
 
 	# Create trainer
 	print("\nInitializing Trainer...")
