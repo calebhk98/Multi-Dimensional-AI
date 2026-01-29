@@ -26,6 +26,13 @@ from src.config import Config
 
 def main():
 	"""Main entry point."""
+	# Enable TF32 for ~22% speedup on RTX 30xx/40xx GPUs
+	torch.set_float32_matmul_precision("high")
+	if torch.cuda.is_available():
+		torch.backends.cuda.matmul.allow_tf32 = True
+		torch.backends.cudnn.allow_tf32 = True
+		torch.backends.cudnn.benchmark = True
+
 	parser = argparse.ArgumentParser(description="Text-only training for Multi-Dimensional AI")
 	parser.add_argument(
 		"--config",
@@ -87,13 +94,23 @@ def main():
 
 	# Create dataloader
 	batch_size = config["training"]["batch_size"]
-	print(f"Creating DataLoader with batch_size={batch_size}...")
+	data_cfg = config.get("data", {})
+	num_workers = data_cfg.get("num_workers", 4)
+
+	# Windows doesn't handle multiprocessing well
+	if os.name == 'nt':
+		num_workers = 0
+		print("Warning: Windows detected, using num_workers=0")
+
+	print(f"Creating DataLoader with batch_size={batch_size}, num_workers={num_workers}...")
 	train_loader = DataLoader(
 		dataset,
 		batch_size=batch_size,
 		shuffle=True,
 		collate_fn=text_only_collate_fn,
-		num_workers=0  # Set to 0 for debugging, increase for performance
+		num_workers=num_workers,
+		pin_memory=data_cfg.get("pin_memory", True),
+		prefetch_factor=data_cfg.get("prefetch_factor", 2) if num_workers > 0 else None,
 	)
 
 	# Create model
