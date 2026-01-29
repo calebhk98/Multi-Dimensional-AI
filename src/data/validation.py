@@ -75,21 +75,35 @@ def validate_input_shapes(
 		
 		# Check specific shape constraints
 		if key in EXPECTED_SHAPES:
-			expected = EXPECTED_SHAPES[key]
-			# Skip validation if expected is None (flexible shapes)
-			if expected is None:
-				continue
-			if len(value.shape) != len(expected):
-				raise ValueError(
-					f"{key}: Expected {len(expected)} dimensions, got {len(value.shape)}"
-				)
-			
-			# Check fixed dimensions (non-None values in expected)
-			for i, (exp_dim, actual_dim) in enumerate(zip(expected, value.shape)):
-				if exp_dim is not None and exp_dim != actual_dim:
-					raise ValueError(
-						f"{key}: Dimension {i} mismatch. Expected {exp_dim}, got {actual_dim}"
-					)
+			_check_shape_constraints(key, value, EXPECTED_SHAPES[key])
+
+
+def _check_shape_constraints(key: str, tensor: torch.Tensor, expected: tuple) -> None:
+	"""
+	Validate dimensions against expected shape.
+	
+	Args:
+		key: Name of the input being validated.
+		tensor: The tensor to check.
+		expected: Tuple of expected dimensions.
+		
+	Raises:
+		ValueError: If dimensions do not match.
+	"""
+	if expected is None:
+		return
+		
+	if len(tensor.shape) != len(expected):
+		raise ValueError(
+			f"{key}: Expected {len(expected)} dimensions, got {len(tensor.shape)}"
+		)
+	
+	# Check fixed dimensions (non-None values in expected)
+	for i, (exp_dim, actual_dim) in enumerate(zip(expected, tensor.shape)):
+		if exp_dim is not None and exp_dim != actual_dim:
+			raise ValueError(
+				f"{key}: Dimension {i} mismatch. Expected {exp_dim}, got {actual_dim}"
+			)
 
 
 def validate_value_ranges(

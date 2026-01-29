@@ -15,6 +15,16 @@ def prepare_dataset(dataset_name: str, config_name: str, cache_dir: str, output_
 	"""
 	Load, tokenize, and save dataset.
 	
+	Purpose:
+		Downloads (or loads from cache) a HuggingFace dataset, tokenizes it using GPT-2 tokenizer,
+		and saves the result as a raw binary file of uint16 tokens.
+
+	Workflow:
+		1. Load dataset using HuggingFace `datasets`.
+		2. Initialize GPT-2 tokenizer.
+		3. Map `batch_tokenize` over the dataset in parallel.
+		4. Iterate over tokenized dataset and write chunks to binary file.
+
 	Args:
 		dataset_name: Name of the HF dataset (e.g. 'wikimedia/wikipedia')
 		config_name: Config name (e.g. '20231101.en')
@@ -22,6 +32,9 @@ def prepare_dataset(dataset_name: str, config_name: str, cache_dir: str, output_
 		output_file: Output .bin file path
 		max_tokens: Optional limit on number of tokens
 		split: Dataset split to load
+		
+	Returns:
+		None
 	"""
 	print(f"Loading dataset {dataset_name} ({config_name}) from {cache_dir}...")
 	
@@ -48,6 +61,15 @@ def prepare_dataset(dataset_name: str, config_name: str, cache_dir: str, output_
 	tokenizer.model_max_length = 100_000_000 # Suppress "token indices sequence length is longer than..." warning
 	
 	def batch_tokenize(examples):
+		"""
+		Tokenize a batch of text examples.
+		
+		Args:
+			examples: Dict of lists of text.
+			
+		Returns:
+			Dict containing list of token lists.
+		"""
 		return {"tokens": [tokenizer.encode(text) for text in examples["text"] if text]}
 
 	print(f"Tokenizing with {os.cpu_count()} processes...")
@@ -96,6 +118,17 @@ def prepare_dataset(dataset_name: str, config_name: str, cache_dir: str, output_
 	print(f"Saved to: {output_path}")
 
 def main():
+	"""
+	Main entry point.
+	
+	Purpose:
+		Parse command line arguments and run dataset preparation.
+		
+	Workflow:
+		1. Define arguments.
+		2. Parse arguments.
+		3. Call prepare_dataset.
+	"""
 	parser = argparse.ArgumentParser(description="Convert HuggingFace dataset to binary for training")
 	parser.add_argument("--dataset", type=str, default="wikimedia/wikipedia", help="Dataset name")
 	parser.add_argument("--config", type=str, default="20231101.en", help="Dataset config")

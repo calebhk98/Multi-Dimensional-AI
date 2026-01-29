@@ -10,11 +10,29 @@ from src.data.text_only_dataset import TextOnlyDataset, text_only_collate_fn
 from torch.utils.data import DataLoader
 
 def log(msg):
+    """
+    Log message to console and file.
+    
+    Args:
+        msg: Message to log.
+    """
     print(msg)
     with open("debug_log.txt", "a", encoding="utf-8") as f:
         f.write(msg + "\n")
 
 def main():
+    """
+    Main entry point for debugging.
+    
+    Purpose:
+        Investigate embedding index out of bounds errors.
+    
+    Workflow:
+        1. Load config and model.
+        2. Check embedding sizes.
+        3. Load data and check ranges.
+        4. Run forward pass with a single sample.
+    """
     with open("debug_log.txt", "w") as f: f.write("") # Clear log
     
     log("Loading config...")

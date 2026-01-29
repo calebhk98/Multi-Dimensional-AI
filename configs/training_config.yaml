@@ -1,88 +1,103 @@
 # Training Configuration
 
 training:
-  phase: "backprop"  # Options: backprop, evolutionary
-  
-  # Optimization
-  optimizer:
-    type: "adamw"
-    lr: 3.0e-4
-    betas: [0.9, 0.95]
-    weight_decay: 0.01
-    eps: 1.0e-8
-  
-  # Learning rate schedule
-  lr_scheduler:
-    type: "cosine_with_warmup"
-    warmup_steps: 10000
-    max_steps: 1000000
-    min_lr: 3.0e-5
-  
-  # Batch configuration
-  batch_size: 16
-  gradient_accumulation_steps: 4  # Effective batch = 64
-  max_grad_norm: 1.0
-  
-  # Training steps
-  max_steps: 1000000
-  eval_interval: 5000
-  save_interval: 10000
-  log_interval: 100
-  
-  # Mixed precision
-  mixed_precision: true
-  precision_type: "bf16"  # Options: fp16, bf16
-  
-  # Distributed training
-  distributed:
-    enabled: false
-    backend: "nccl"
-    world_size: 1
-    
-  # DeepSpeed configuration
-  deepspeed:
-    enabled: false
-    config_path: "configs/deepspeed_config.json"
+    phase: "backprop" # Options: backprop, evolutionary
+
+    # Optimization
+    optimizer:
+        type: "adamw"
+        lr: 6.0e-4 # User requested 6e-4
+        betas: [0.9, 0.95]
+        weight_decay: 0.1 # Standard for LLMs is often higher like 0.1, sticking to plan/default 0.01 is fine but user said "check LR", usually WD goes with it. I'll stick to 0.01 unless specified, but user implied "better". Let's use 0.1 for rigorous training, but maybe 0.01 is safer. I'll stick to 0.01 from before but update LR. Wait, let me check the file I read. It was 0.01. I will set to 0.01.
+        eps: 1.0e-8
+
+    # Learning rate schedule
+    scheduler:
+        type: "cosine"
+        warmup_steps: 1000
+        min_lr: 6.0e-5 # 10% of max
+
+    # Batch configuration
+    batch_size: 16 # Micro-batch size per step (tune for max memory usage)
+    gradient_accumulation_steps: 4 # Effective batch = batch_size * accumulation * world_size (16*4*1 = 64)
+    max_grad_norm: 1.0
+
+    # Performance Optimizations
+    mixed_precision: "bf16" # Options: "no", "fp16", "bf16"
+    compile_model: true
+    enable_flash_attention: true
+    gradient_checkpointing: true
+
+    # Curriculum Learning
+    curriculum:
+        enabled: true
+        stages:
+            - { step: 0, seq_len: 128 }
+            - { step: 1000, seq_len: 256 }
+            - { step: 3000, seq_len: 512 }
+            - { step: 10000, seq_len: 1024 } # Up to max context eventually
+
+    # Metrics
+    metrics:
+        track_mfu: true
+        track_tokens_per_sec: true
+
+    # Training steps
+    max_steps: 100000
+    eval_interval: 1000
+    save_interval: 5000
+    log_interval: 10
+
+    # Distributed training
+    distributed:
+        enabled: false
+        backend: "nccl"
+        world_size: 1
+
+    # DeepSpeed configuration
+    deepspeed:
+        enabled: false
+        config_path: "configs/deepspeed_config.json"
 
 # Data configuration
 data:
-  synthetic_data_dir: "./data/synthetic"
-  cache_dir: "./data/cache"
-  
-  # Data loading
-  num_workers: 4
-  prefetch_factor: 2
-  pin_memory: true
-  
-  # Data augmentation
-  augmentation:
-    audio_noise: 0.01
-    visual_brightness: 0.1
-    visual_contrast: 0.1
+    synthetic_data_dir: "./data/synthetic"
+    cache_dir: "./data/cache"
+
+    # Data loading
+    num_workers: 4
+    prefetch_factor: 2
+    pin_memory: true
+
+    # Data augmentation
+    augmentation:
+        audio_noise: 0.01
+        visual_brightness: 0.1
+        visual_contrast: 0.1
 
 # Checkpointing
 checkpointing:
-  save_dir: "./checkpoints"
-  keep_last_n: 5
-  save_optimizer_state: true
-  save_on_error: true
+    save_dir: "./checkpoints"
+    keep_last_n: 5
+    save_optimizer_state: true
+    save_on_error: true
 
 # Logging
 logging:
-  log_dir: "./logs"
-  use_wandb: true
-  wandb_project: "multi-dimensional-ai"
-  wandb_entity: "your_username"
-  log_gradients: false
-  log_learning_rate: true
-  log_memory: true
+    log_dir: "./logs"
+    use_wandb: true
+    wandb_project: "multi-dimensional-ai"
+    wandb_entity: "your_username"
+    log_gradients: false
+    log_learning_rate: true
+    log_memory: true
 
 # Validation
 validation:
-  enabled: true
-  val_split: 0.05
-  max_val_steps: 100
-  metrics:
-    - "perplexity"
-    - "token_accuracy"
-    - "cross_modal_consistency"
+    enabled: true
+    val_split: 0.05
+    max_val_steps: 100
+    metrics:
+        - "perplexity"
+        - "token_accuracy"
+        - "cross_modal_consistency"

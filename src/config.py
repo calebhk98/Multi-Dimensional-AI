@@ -50,25 +50,32 @@ class Config:
 		"""
 		config = cls()
 		
-		if Path(model_config_path).exists():
-			with open(model_config_path, 'r') as f:
-				config.model = yaml.safe_load(f)
-		
-		if Path(training_config_path).exists():
-			with open(training_config_path, 'r') as f:
-				config.training = yaml.safe_load(f)
-		
-		if Path(inference_config_path).exists():
-			with open(inference_config_path, 'r') as f:
-				config.inference = yaml.safe_load(f)
-		
-		if Path(evolution_config_path).exists():
-			with open(evolution_config_path, 'r') as f:
-				config.evolution = yaml.safe_load(f)
+		# Helper to unwrap config if root key matches
+		def load_and_unwrap(path: str, key: str) -> Dict[str, Any]:
+			"""
+			Load and optionally unwrap configuration.
+			
+			Args:
+				path: Path to the configuration file.
+				key: Root key to unwrap if present.
+				
+			Returns:
+				Configuration dictionary.
+			"""
+			if not Path(path).exists():
+				return {}
+			with open(path, 'r') as f:
+				data = yaml.safe_load(f)
+			# If data is {key: {...}}, unwrap it.
+			if data and isinstance(data, dict) and key in data and len(data) == 1:
+				return data[key]
+			return data or {}
 
-		if Path(dataset_config_path).exists():
-			with open(dataset_config_path, 'r') as f:
-				config.dataset = yaml.safe_load(f)
+		config.model = load_and_unwrap(model_config_path, "model")
+		config.training = load_and_unwrap(training_config_path, "training")
+		config.inference = load_and_unwrap(inference_config_path, "inference")
+		config.evolution = load_and_unwrap(evolution_config_path, "evolution")
+		config.dataset = load_and_unwrap(dataset_config_path, "dataset")
 		
 		return config
 	

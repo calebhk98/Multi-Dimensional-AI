@@ -62,7 +62,7 @@ def analyze_indentation(filepath):
 	
 	# 2. Block-level analysis (Functions/Classes) using AST
 	try:
-		tree = ast.parse(content)
+		tree = ast.parse(content, filename=filepath)
 	except SyntaxError:
 		return {"error": "SyntaxError"}
 

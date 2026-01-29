@@ -1,3 +1,6 @@
+"""
+Tests for the HuggingFace dataset preparation script.
+"""
 
 import pytest
 import numpy as np
@@ -11,7 +14,12 @@ class TestPrepareHFData:
 	
 	@pytest.fixture
 	def mock_dataset(self):
-		"""Create a mock HuggingFace dataset."""
+		"""
+		Create a mock HuggingFace dataset.
+
+		Returns:
+			List of dicts representing dataset rows.
+		"""
 		mock_ds = [
 			{"text": "Hello world"},
 			{"text": "This is a test"},
@@ -22,7 +30,26 @@ class TestPrepareHFData:
 	@patch('scripts.prepare_hf_data.load_dataset')
 	@patch('scripts.prepare_hf_data.GPT2Tokenizer')
 	def test_prepare_dataset(self, mock_tokenizer_cls, mock_load_dataset, mock_dataset):
-		"""Test the preparation logic with mocked dataset and tokenizer."""
+		"""
+		Test the preparation logic with mocked dataset and tokenizer.
+
+		Purpose:
+			Verify that dataset is correctly loaded, mapped, and saved to binary format.
+
+		Workflow:
+			1. Mock dataset loading and mapping.
+			2. Mock tokenizer encoding.
+			3. Run prepare_dataset.
+			4. Verify output file exists and has correct content.
+
+		Args:
+			mock_tokenizer_cls: Mocked tokenizer class.
+			mock_load_dataset: Mocked load_dataset function.
+			mock_dataset: Fixture dataset.
+
+		ToDo:
+			None
+		"""
 		# Setup mocks
 		# partial mock for dataset to support map
 		mock_ds_obj = MagicMock()
@@ -31,6 +58,17 @@ class TestPrepareHFData:
 		# "Hello world" -> [72, ...]
 		
 		def fake_map(function, batched=False, **kwargs):
+			"""
+			Simulate dataset.map functionality.
+			
+			Args:
+				function: Function to apply.
+				batched: Whether to batch.
+				**kwargs: Additional args.
+				
+			Returns:
+				List of processed examples.
+			"""
 			# Apply function to our mock data
 			# map in script is batched=True
 			if batched:
@@ -79,9 +117,32 @@ class TestPrepareHFData:
 
 	@patch('scripts.prepare_hf_data.load_dataset')
 	def test_max_tokens_limit(self, mock_load_dataset):
-		"""Test that max_tokens argument stops processing early."""
+		"""
+		Test that max_tokens argument stops processing early.
+
+		Purpose:
+			Ensure the script respects the max_tokens limit and stops outputting data.
+
+		Workflow:
+			1. Create infinite/large data source.
+			2. Mock tokenizer.
+			3. Run prepare_dataset with max_tokens limit.
+			4. Verify output size is within limit.
+
+		Args:
+			mock_load_dataset: Mocked load_dataset function.
+
+		ToDo:
+			None
+		"""
 		# Infinite generator of data
 		def infinite_data():
+			"""
+			Generate infinite stream of dummy data.
+			
+			Returns:
+				Yields dummy data dicts.
+			"""
 			while True:
 				yield {"text": "A" * 10} # 10 tokens per row
 				

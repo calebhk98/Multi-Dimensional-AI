@@ -1,4 +1,4 @@
-"""
+r"""
 Environment Diagnostic Script
 
 Quick script to verify the Python environment is correctly set up
@@ -14,7 +14,12 @@ from pathlib import Path
 
 
 def check_python_version():
-	"""Check Python version."""
+	"""
+	Check Python version.
+	
+	Purpose:
+		Verify Python version and virtual environment status.
+	"""
 	print("=" * 80)
 	print("Python Version")
 	print("=" * 80)
@@ -35,7 +40,15 @@ def check_python_version():
 
 
 def check_packages():
-	"""Check required packages are installed."""
+	"""
+	Check required packages are installed.
+	
+	Purpose:
+		Verify all required packages are available.
+	
+	Returns:
+		True if all packages are installed.
+	"""
 	print("=" * 80)
 	print("Required Packages")
 	print("=" * 80)
@@ -70,7 +83,12 @@ def check_packages():
 
 
 def check_cuda():
-	"""Check CUDA availability."""
+	"""
+	Check CUDA availability.
+	
+	Purpose:
+		Verify CUDA/GPU is available for training.
+	"""
 	print("=" * 80)
 	print("CUDA / GPU")
 	print("=" * 80)
@@ -95,7 +113,15 @@ def check_cuda():
 
 
 def check_project_structure():
-	"""Check project directories exist."""
+	"""
+	Check project directories exist.
+	
+	Purpose:
+		Verify required project directories are present.
+	
+	Returns:
+		True if all directories exist.
+	"""
 	print("=" * 80)
 	print("Project Structure")
 	print("=" * 80)
@@ -125,7 +151,15 @@ def check_project_structure():
 
 
 def check_config_files():
-	"""Check required config files exist."""
+	"""
+	Check required config files exist.
+	
+	Purpose:
+		Verify all required configuration files are present.
+	
+	Returns:
+		True if all config files exist.
+	"""
 	print("=" * 80)
 	print("Configuration Files")
 	print("=" * 80)
@@ -154,7 +188,15 @@ def check_config_files():
 
 
 def check_imports():
-	"""Check src modules can be imported."""
+	"""
+	Check src modules can be imported.
+	
+	Purpose:
+		Verify project modules are importable.
+	
+	Returns:
+		True if all modules import successfully.
+	"""
 	print("=" * 80)
 	print("Module Imports")
 	print("=" * 80)
@@ -189,7 +231,15 @@ def check_imports():
 
 
 def main():
-	"""Run all checks."""
+	"""
+	Run all checks.
+	
+	Purpose:
+		Execute all environment checks and report status.
+	
+	Returns:
+		0 if all checks pass, 1 otherwise.
+	"""
 	print("\n" + "=" * 80)
 	print("Multi-Dimensional AI - Environment Diagnostic")
 	print("=" * 80 + "\n")

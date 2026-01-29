@@ -42,6 +42,21 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 
+def _check_touch_values(touch_data: Any, line_num: int, errors: List[str]):
+	"""
+	Helper to validate touch values are within range.
+	
+	Args:
+		touch_data: Touch sensor data (list or float).
+		line_num: Current line number for error reporting.
+		errors: List to append validation errors to.
+	"""
+	if isinstance(touch_data, list):
+		for idx, val in enumerate(touch_data):
+			if not (TOUCH_MIN <= val <= TOUCH_MAX):
+				errors.append(f"Line {line_num}: Touch[{idx}] value {val} out of range [{TOUCH_MIN}, {TOUCH_MAX}]")
+
+
 def validate_files_exist(session_dir: Path) -> Tuple[bool, List[str]]:
 	"""
 	Check if required files exist in session directory.
@@ -150,11 +165,8 @@ def validate_sensor_ranges(session_dir: Path) -> Tuple[bool, List[str]]:
 				
 				# Validate touch values
 				if 'touch' in data:
-					touch = data['touch']
-					if isinstance(touch, list):
-						for idx, val in enumerate(touch):
-							if not (TOUCH_MIN <= val <= TOUCH_MAX):
-								errors.append(f"Line {line_num}: Touch[{idx}] value {val} out of range [{TOUCH_MIN}, {TOUCH_MAX}]")
+					_check_touch_values(data['touch'], line_num, errors)
+
 	
 	except Exception as e:
 		errors.append(f"Error validating sensor ranges: {e}")

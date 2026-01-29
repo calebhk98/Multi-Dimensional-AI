@@ -5,6 +5,7 @@ Transformer backbone - the core of the multi-modal creature model.
 import torch
 import torch.nn as nn
 from typing import Optional, Tuple
+from torch.utils.checkpoint import checkpoint
 
 
 class TransformerBackbone(nn.Module):
@@ -46,6 +47,7 @@ class TransformerBackbone(nn.Module):
 		self.hidden_dim = hidden_dim
 		self.num_heads = num_heads
 		self.max_seq_length = max_seq_length
+		self.gradient_checkpointing = False
 		
 		# Transformer encoder layers
 		self.layers = nn.ModuleList([
@@ -61,6 +63,15 @@ class TransformerBackbone(nn.Module):
 		
 		# Final layer norm
 		self.final_layer_norm = nn.LayerNorm(hidden_dim)
+		
+	def enable_gradient_checkpointing(self, value: bool = True):
+		"""
+		Enable or disable gradient checkpointing.
+		
+		Args:
+			value: Whether to enable checkpointing.
+		"""
+		self.gradient_checkpointing = value
 	
 	def forward(
 		self,
@@ -92,10 +103,22 @@ class TransformerBackbone(nn.Module):
 		
 		# Pass through each transformer layer
 		for layer in self.layers:
-			hidden_states = layer(
-				hidden_states, 
-				key_padding_mask=key_padding_mask
-			)
+			if self.gradient_checkpointing and self.training:
+				# Use checkpointing
+				# Note: checkpoint requires one tensor with requires_grad=True
+				# hidden_states usually has it.
+				# We wrap the layer call in a lambda or pass args directly
+				hidden_states = checkpoint(
+					layer,
+					hidden_states,
+					key_padding_mask,
+					use_reentrant=False
+				)
+			else:
+				hidden_states = layer(
+					hidden_states, 
+					key_padding_mask=key_padding_mask
+				)
 			
 			if return_all_layers:
 				all_hidden_states.append(hidden_states)
