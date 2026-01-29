@@ -1,0 +1,99 @@
+# Model Architecture Configuration - 100M Parameters (Tiny)
+# Roughly equivalent to GPT-2 Small (124M)
+
+model:
+    name: "MultiModalCreature-Tiny"
+    size: "100M"
+
+    # Transformer backbone (GPT-2 Small specs)
+    transformer:
+        num_layers: 12 # Reduced from 24
+        hidden_dim: 768 # Reduced from 1536
+        num_attention_heads: 12 # Reduced from 16 (768/12 = 64 head dim)
+        ffn_dim: 3072 # 4x hidden_dim
+        dropout: 0.1
+        attention_dropout: 0.1
+        activation: "gelu"
+        max_position_embeddings: 1024 # Reduced context for faster training
+        layer_norm_eps: 1.0e-5
+
+    # Input encoders - Scaled down embeddings
+    encoders:
+        internal_voice:
+            vocab_size: 50257
+            embedding_dim: 768
+            max_seq_length: 512
+
+        external_voice:
+            vocab_size: 50257
+            embedding_dim: 768
+            max_seq_length: 512
+
+        audio:
+            sample_rate: 16000
+            hop_length: 320
+            # num_codebooks: 1
+            codebook_size: 1024
+            encoder_type: "cnn_transformer"
+
+        vision:
+            image_size: 224
+            patch_size: 16
+            # num_patches: 196
+            encoder_type: "vit"
+            pretrained: false # Train from scratch for verification
+
+        proprioception:
+            num_joints: 24
+            encoding_dim: 128 # Reduced
+            temporal_window: 10
+
+        touch:
+            num_contact_points: 10
+            feature_dim: 64 # Reduced
+            surface_types: 8
+
+    # Output decoders
+    decoders:
+        internal_text:
+            vocab_size: 50257
+            # head_dim: 768
+            use_null_token: true
+
+        external_text:
+            vocab_size: 50257
+            # head_dim: 768
+            use_null_token: true
+
+        audio:
+            codebook_size: 1024
+            # head_dim: 768
+            use_null_token: true
+            vocoder_type: "encodec"
+
+        animation:
+            num_joints: 24
+            num_blend_shapes: 51
+            output_dim: 128 # Reduced
+            output_type: "continuous"
+
+    # Token fusion strategy
+    fusion:
+        strategy: "concatenate"
+        modality_embeddings: true
+        positional_encoding_type: "learned"
+
+# Loss weights
+loss_weights:
+    internal_text: 1.0
+    external_text: 1.0
+    audio: 0.8
+    animation: 0.6
+    synchronization: 0.5
+
+# Sampling configuration
+sampling:
+    temperature: 0.8
+    top_k: 50
+    top_p: 0.9
+    repetition_penalty: 1.2

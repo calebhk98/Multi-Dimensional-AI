@@ -27,6 +27,7 @@ class AnimationDecoder(nn.Module):
 		num_joints: int = 24,
 		num_blend_shapes: int = 51,  # ARKit facial blend shapes
 		dropout: float = 0.1,
+		**kwargs,  # Absorb extra config args
 	):
 		"""
 		Initialize animation decoder.

@@ -27,6 +27,7 @@ class AudioDecoder(nn.Module):
 		embedding_dim: int = 1536,
 		dropout: float = 0.1,
 		use_null_token: bool = True,
+		**kwargs,  # Absorb extra config args
 	):
 		"""
 		Initialize audio decoder.

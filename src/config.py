@@ -29,7 +29,7 @@ class Config:
 	@classmethod
 	def from_files(
 		cls,
-		model_config_path: str = "configs/model_config.yaml",
+		model_config_path: str = "configs/model_1b.yaml",
 		training_config_path: str = "configs/training_config.yaml",
 		inference_config_path: str = "configs/inference_config.yaml",
 		evolution_config_path: str = "configs/evolution_config.yaml",

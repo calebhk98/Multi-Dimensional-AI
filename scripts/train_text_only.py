@@ -44,11 +44,20 @@ def main():
 		action="store_true",
 		help="Run only 10 steps for quick validation"
 	)
+	parser.add_argument(
+		"--model-config",
+		type=str,
+		default="configs/model_1b.yaml",
+		help="Path to model configuration YAML file"
+	)
 	args = parser.parse_args()
 
 	# Load configuration
-	print(f"Loading config from {args.config}...")
-	config_obj = Config.from_files(training_config_path=args.config)
+	print(f"Loading config from {args.config} and {args.model_config}...")
+	config_obj = Config.from_files(
+		training_config_path=args.config,
+		model_config_path=args.model_config
+	)
 	
 	# Flatten config into a single dictionary for compatibility with current codebase
 	config = {}
