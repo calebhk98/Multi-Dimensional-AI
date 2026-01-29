@@ -5,76 +5,101 @@ Using WSL2 (Windows Subsystem for Linux) provides significant performance benefi
 - **Better PyTorch multiprocessing** support
 - **Native Linux CUDA drivers** (since WSL2 2.0)
 
-## Quick Start
+## Quick Start (Recommended)
 
-### 1. Open WSL2 Terminal
+We provide scripts to automate setup and training.
+
+### Step 1: Open WSL2
 
 ```bash
-# From Windows, open PowerShell or CMD and type:
+# From Windows PowerShell or CMD:
 wsl
 
-# Or open "Ubuntu" from Start menu if you installed Ubuntu
+# Or open "Ubuntu" from Start menu
 ```
 
-### 2. Navigate to Your Project
+### Step 2: Navigate to Project
 
 Windows drives are mounted at `/mnt/c`, `/mnt/d`, `/mnt/g`, etc.
 
 ```bash
-# Navigate to your project
 cd /mnt/g/AI/multiDimAI/Multi-Dimensional-AI
-
-# Verify you're in the right place
-ls -la
 ```
 
-### 3. Set Up Python Environment
+### Step 3: Run Setup Script
 
 ```bash
-# Install Python and venv if not already installed
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-
-# Create virtual environment
-python3 -m venv venv_wsl
-
-# Activate it
-source venv_wsl/bin/activate
-
-# Install PyTorch with CUDA (check https://pytorch.org for latest)
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# Install other requirements
-pip install -r requirements.txt
+bash setup_wsl.sh
 ```
 
-### 4. Verify CUDA Works
+This script will:
+- Update system packages
+- Install Python 3 and build dependencies
+- Create virtual environment (`venv_wsl`)
+- Install PyTorch with CUDA support
+- Install project requirements
+- Verify CUDA is working
+
+### Step 4: Start Training
 
 ```bash
-python3 -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"None\"}')"
+# Simple usage - trains text phase by default
+bash train_wsl.sh /mnt/g/Datasets/wiki_tokenized.bin
+
+# Specify a phase
+bash train_wsl.sh /mnt/g/Datasets/wiki_tokenized.bin text
+
+# With extra arguments
+bash train_wsl.sh /mnt/g/Datasets/wiki_tokenized.bin text --max-steps 50000
+
+# Continue from checkpoint (e.g., adding audio after text training)
+bash train_wsl.sh /mnt/g/Datasets/audio_data.bin audio --checkpoint checkpoints/staged/text/text_final.pt
 ```
 
-You should see:
+## Training Launcher Usage
+
+The `train_wsl.sh` script simplifies training:
+
 ```
-CUDA available: True
-GPU: NVIDIA GeForce RTX 3090
+bash train_wsl.sh <data_path> [phase] [extra_args...]
+
+Arguments:
+  data_path    Path to tokenized .bin file (required)
+  phase        Training phase: text, audio, vision, full (default: text)
+  extra_args   Additional arguments passed to training script
 ```
 
-### 5. Run Training
+### Examples
 
 ```bash
-# Staged training (recommended)
-python scripts/train_staged.py \
-    --config configs/training_fast.yaml \
-    --model-config configs/model_100m.yaml \
-    --data "/mnt/g/Datasets/wiki_tokenized.bin" \
-    --phase text
+# Phase 1: Train on text (Wikipedia, etc.)
+bash train_wsl.sh /mnt/g/Datasets/wiki_tokenized.bin text
 
-# Or the fast text-only script
-python scripts/train_text_fast.py \
-    --config configs/training_fast.yaml \
-    --model-config configs/model_100m.yaml \
-    --data "/mnt/g/Datasets/wiki_tokenized.bin"
+# Phase 2: Add audio capability
+bash train_wsl.sh /mnt/g/Datasets/audio_data.bin audio \
+    --checkpoint checkpoints/staged/text/text_final.pt
+
+# Phase 3: Add vision
+bash train_wsl.sh /mnt/g/Datasets/vision_data.bin vision \
+    --checkpoint checkpoints/staged/audio/audio_final.pt
+
+# Custom settings
+bash train_wsl.sh ~/data/wiki.bin text --max-steps 100000 --batch-size 16
+```
+
+## Performance Tip: Copy Data to WSL Filesystem
+
+Accessing Windows files through `/mnt/` has I/O overhead. For best performance, copy your data to WSL's native filesystem:
+
+```bash
+# Create data directory in WSL home
+mkdir -p ~/data
+
+# Copy your tokenized data (one-time)
+cp /mnt/g/Datasets/wiki_tokenized.bin ~/data/
+
+# Train from WSL filesystem (faster)
+bash train_wsl.sh ~/data/wiki_tokenized.bin text
 ```
 
 ## Performance Comparison
@@ -83,111 +108,113 @@ python scripts/train_text_fast.py \
 |---------|-------------|------|
 | `num_workers` | 0 (forced) | 4+ |
 | Data loading | Single-threaded | Multi-threaded |
-| Expected speedup | Baseline | **2-4x faster** |
+| Expected tokens/sec | ~665 | ~15,000-20,000 |
+| Speedup | 1x | **~25-30x** |
+
+The speedup comes from:
+1. `num_workers=4` instead of 0 (removes data loading bottleneck)
+2. TF32 tensor cores enabled
+3. FP16 mixed precision
+
+## Manual Setup (Alternative)
+
+If you prefer to set up manually instead of using `setup_wsl.sh`:
+
+```bash
+# 1. Update system
+sudo apt update && sudo apt upgrade -y
+
+# 2. Install Python
+sudo apt install -y python3 python3-pip python3-venv python3-dev build-essential
+
+# 3. Create virtual environment
+python3 -m venv venv_wsl
+source venv_wsl/bin/activate
+
+# 4. Install PyTorch with CUDA
+pip install --upgrade pip
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# 5. Install requirements
+pip install -r requirements.txt
+
+# 6. Verify CUDA
+python3 -c "import torch; print(f'CUDA: {torch.cuda.is_available()}, GPU: {torch.cuda.get_device_name(0)}')"
+```
 
 ## Troubleshooting
 
 ### CUDA Not Found
 
-If CUDA isn't detected in WSL2:
-
 ```bash
-# Check NVIDIA driver version (run in Windows PowerShell)
+# Check NVIDIA driver in Windows PowerShell first
 nvidia-smi
 
-# In WSL2, you need the WSL2-specific CUDA toolkit
-# DON'T install the full CUDA toolkit, the driver is shared from Windows
-
-# Just ensure PyTorch is installed with CUDA support:
+# In WSL2, DON'T install full CUDA toolkit (driver is shared from Windows)
+# Just ensure PyTorch has CUDA support:
 pip install torch --index-url https://download.pytorch.org/whl/cu121
 ```
 
 ### Out of Memory
 
-WSL2 has memory limits by default. Create/edit `~/.wslconfig` in Windows:
+WSL2 has memory limits by default. Create/edit `.wslconfig` in Windows:
 
 ```
-# In Windows: C:\Users\<YourUsername>\.wslconfig
+# File: C:\Users\<YourUsername>\.wslconfig
 [wsl2]
-memory=48GB  # Adjust based on your RAM
+memory=48GB
 swap=8GB
 ```
 
 Then restart WSL2:
 ```powershell
-# In PowerShell
 wsl --shutdown
 wsl
-```
-
-### Slow File Access on /mnt/
-
-Accessing Windows files through `/mnt/` has overhead. For best performance:
-
-```bash
-# Option 1: Copy data to WSL2 native filesystem (faster)
-cp /mnt/g/Datasets/wiki_tokenized.bin ~/data/
-
-# Then train from there
-python scripts/train_staged.py --data ~/data/wiki_tokenized.bin ...
-
-# Option 2: Use Windows path directly (slower but convenient)
-python scripts/train_staged.py --data /mnt/g/Datasets/wiki_tokenized.bin ...
 ```
 
 ### Permission Issues
 
 ```bash
-# If you get permission errors
-chmod +x scripts/*.py
+# Make scripts executable
+chmod +x setup_wsl.sh train_wsl.sh scripts/*.py
 
-# For file access issues
-sudo chown -R $USER:$USER /path/to/project
+# Fix ownership if needed
+sudo chown -R $USER:$USER .
 ```
 
-## One-Line Setup Script
-
-Save this as `setup_wsl.sh` and run it:
+### "Module not found" Errors
 
 ```bash
-#!/bin/bash
-set -e
-
-echo "Setting up WSL2 training environment..."
-
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Python
-sudo apt install -y python3 python3-pip python3-venv
-
-# Create venv
-python3 -m venv venv_wsl
+# Make sure virtual environment is activated
 source venv_wsl/bin/activate
 
-# Install PyTorch
-pip install --upgrade pip
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# Install requirements
-pip install -r requirements.txt
-
-# Test CUDA
-python3 -c "import torch; assert torch.cuda.is_available(), 'CUDA not available!'; print('CUDA OK:', torch.cuda.get_device_name(0))"
-
-echo "Setup complete! Activate with: source venv_wsl/bin/activate"
+# Verify you're using the right Python
+which python3  # Should show: /path/to/venv_wsl/bin/python3
 ```
 
-## Expected Performance
+## Full Workflow Summary
 
-With WSL2 and all optimizations:
+```bash
+# One-time setup
+wsl
+cd /mnt/g/AI/multiDimAI/Multi-Dimensional-AI
+bash setup_wsl.sh
 
-| Metric | Windows CMD | WSL2 + Optimizations |
-|--------|-------------|---------------------|
-| Tokens/sec | ~665 | ~15,000-20,000 |
-| Speedup | 1x | **~25-30x** |
+# Copy data for better performance (optional but recommended)
+mkdir -p ~/data
+cp /mnt/g/Datasets/wiki_tokenized.bin ~/data/
 
-The majority of the speedup comes from:
-1. `num_workers=4` instead of 0 (removes data loading bottleneck)
-2. TF32 tensor cores enabled
-3. Proper FP16 mixed precision
+# Train!
+bash train_wsl.sh ~/data/wiki_tokenized.bin text
+```
+
+## Staged Training Phases
+
+| Phase | What's Trained | Use Case |
+|-------|----------------|----------|
+| `text` | Text encoders/decoders + transformer | Initial LLM training |
+| `audio` | + Audio encoder/decoder | Add speech/transcription |
+| `vision` | + Visual encoder | Add image understanding |
+| `full` | + Body (proprioception/touch/animation) | Full VR embodiment |
+
+Each phase builds on the previous, preserving learned weights.
