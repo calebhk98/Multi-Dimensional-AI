@@ -28,6 +28,7 @@ class VisualEncoder(nn.Module):
 		mlp_ratio: int = 4,
 		dropout: float = 0.1,
 		use_stereo: bool = True,
+		**kwargs,  # Absorb extra config args
 	):
 		"""
 		==============================================================================

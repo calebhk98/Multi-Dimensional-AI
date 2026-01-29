@@ -26,6 +26,7 @@ class TouchEncoder(nn.Module):
 		surface_types: int = 8,  # wood, metal, soft, liquid, etc.
 		max_contacts: int = 20,  # Max simultaneous contacts
 		dropout: float = 0.1,
+		**kwargs,  # Absorb extra config args
 	):
 		"""
 		==============================================================================

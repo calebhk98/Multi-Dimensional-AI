@@ -29,6 +29,7 @@ class ProprioceptionEncoder(nn.Module):
 		temporal_window: int = 10,  # Number of past frames to consider
 		use_velocity: bool = True,
 		dropout: float = 0.1,
+		**kwargs,  # Absorb extra config args
 	):
 		"""
 		==============================================================================
